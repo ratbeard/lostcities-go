@@ -22,7 +22,7 @@ type Move struct {
 	player   string
 	card     Card
 	action   int    // Play || Discard
-	drawFrom string // "yellow", etc, "deck"
+	drawPile string // "yellow", etc, "deck"
 }
 
 type Card struct {
@@ -112,8 +112,19 @@ func buildShuffledDeck() []Card {
 
 func (game *Game) validMove(move *Move) (ok bool) {
 
+	if pile := game.pile(move.drawPile); len(pile) == 0 {
+		return
+	}
+
 	ok = true
 	return
+}
+
+func (game *Game) pile(name string) []Card {
+	if name == "deck" {
+		return game.deck
+	}
+	return game.discards[name]
 }
 
 func (game *Game) drawFromDeck(player string) bool {

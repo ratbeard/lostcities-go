@@ -98,6 +98,15 @@ func TestValidMove(t *testing.T) {
 
 	// Trying something other than Play or Discard is not legit
 	assertInvalidMove(t, game, &Move{"player1", game.player1Hand[0], 3, "deck"})
+
+	// Drawing from empty discard pile is not legit
+	assertInvalidMove(t, game, &Move{"player1", game.player1Hand[0], PlayAction, "yellow"})
+
+	// Drawing from non-empty discard pile is legit
+	game.discards["yellow"] = []Card{Card{"yellow", "1"}}
+	assertValidMove(t, game, &Move{"player1", game.player1Hand[0], PlayAction, "yellow"})
+	game.discards["yellow"] = []Card{}
+
 }
 
 // Helpers

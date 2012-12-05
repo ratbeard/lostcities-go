@@ -74,7 +74,7 @@ func NewGame() (game *Game) {
 	}
 
 	game.currentTurn = "player1"
-
+	game.discards = make(map[string][]Card)
 	return
 }
 
@@ -162,12 +162,12 @@ func (game *Game) pile(name string) []Card {
 
 func (game *Game) drawFromDeck(player string) bool {
 	card, deck, ok := pop(game.deck)
-	game.deck = deck
 	if !ok {
 		return ok
 	}
 
-	fmt.Println("drawFromDeck:", player, card)
+	// fmt.Println("drawFromDeck:", player, card)
+	game.deck = deck
 
 	if player == "player1" {
 		game.player1Hand = append(game.player1Hand, card)

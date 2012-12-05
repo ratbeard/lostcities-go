@@ -61,18 +61,48 @@ func TestExpectedDeckOrder(t *testing.T) {
 	}
 }
 
+func TestHasCard(t *testing.T) {
+	rand.Seed(0)
+	game := NewGame()
+	var card Card
+
+	card = Card{"green", "7"}
+	if !hasCard(game.player1Hand, card) {
+		t.Error("Card should be in hand", card)
+	}
+
+	if hasCard(game.player2Hand, card) {
+		t.Error("Card should not be in hand", card)
+	}
+}
+
 func TestValidMove(t *testing.T) {
 	rand.Seed(0)
 	game := NewGame()
-	var move *Move
 
-	move = &Move{"player1", Card{"green", "7"}, Play, "deck"}
+	// Playing or Discarding from hand then drawing from deck is a legit first move
+	for _, card := range game.player1Hand {
+		assertValidMove(t, game, &Move{"player1", card, PlayAction, "deck"})
+		assertValidMove(t, game, &Move{"player1", card, DiscardAction, "deck"})
+	}
+
+	// Wrong turn, not legit
+	assertInvalidMove(t, game, &Move{"player2", game.player2Hand[0], PlayAction, "deck"})
+
+	// Playing card not in hand is not legit
+	assertInvalidMove(t, game, &Move{"player1", game.player2Hand[0], PlayAction, "deck"})
+	assertInvalidMove(t, game, &Move{"player1", game.deck[0], PlayAction, "deck"})
+}
+
+// Helpers
+func assertValidMove(t *testing.T, game *Game, move *Move) {
 	if !game.validMove(move) {
 		t.Error("is valid", move)
 	}
+}
 
-	move = &Move{"player1", Card{"green", "7"}, Play, "yellow"}
+func assertInvalidMove(t *testing.T, game *Game, move *Move) {
 	if game.validMove(move) {
-		t.Error("trying to draw from an empty discard pile is invalid", move)
+		t.Error("is an invalid move", move)
 	}
 }

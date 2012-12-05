@@ -14,8 +14,8 @@ var Suits = []string{"yellow", "white", "blue", "green", "red"}
 const cardsInHandCount = 5
 
 const (
-	Play    = 1
-	Discard = 2
+	PlayAction    = 1
+	DiscardAction = 2
 )
 
 type Move struct {
@@ -111,13 +111,41 @@ func buildShuffledDeck() []Card {
 }
 
 func (game *Game) validMove(move *Move) (ok bool) {
+	// Invalid move if wrong turn
+	if move.player != game.currentTurn {
+		return
+	}
 
+	// Invalid move if card not in hand 
+	if !hasCard(game.hand(move.player), move.card) {
+		return
+	}
+
+	// Invalid move if draw deck is empty
 	if pile := game.pile(move.drawPile); len(pile) == 0 {
 		return
 	}
 
 	ok = true
 	return
+}
+
+func hasCard(cards []Card, card Card) bool {
+	for _, c := range cards {
+		if c == card {
+			return true
+		}
+	}
+	return false
+}
+
+func (game *Game) hand(name string) []Card {
+	if name == "player1" {
+		return game.player1Hand
+	} else if name == "player2" {
+		return game.player2Hand
+	}
+	return nil
 }
 
 func (game *Game) pile(name string) []Card {

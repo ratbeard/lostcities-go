@@ -70,6 +70,7 @@ func buildShuffledDeck() ([]Card) {
 	cardCount := len(Pips)*len(Suits)
 	unshuffled := make([]Card, cardCount)
 
+	// Build that deck
 	for i, suit := range Suits {
 		for j, pip := range Pips {
 			unshuffled[i*len(Pips)+j] = Card{suit, pip}
@@ -77,10 +78,11 @@ func buildShuffledDeck() ([]Card) {
 		}
 	}
 
+	// Shuffle that deck
 	randIndices := rand.Perm(cardCount)
 	shuffled := make([]Card, cardCount)
 	for i, index := range randIndices {
-		shuffled[index] = unshuffled[i]
+		shuffled[i] = unshuffled[index]
 	}
 	fmt.Println(shuffled)
 	

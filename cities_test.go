@@ -2,10 +2,14 @@ package main
 
 import (
 	"testing"
+	"math/rand"
+	"time"
 )
 
 func TestGame(t *testing.T) {
+	rand.Seed(time.Now().UTC().UnixNano())
 	g := NewGame()
+	
 	
 	if len(g.player1Hand) != 5 {
 		t.Error("Wrong number of starting cards for player1", len(g.player1Hand))

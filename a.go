@@ -50,48 +50,58 @@ func NewGame() (game *Game) {
 
 	// Deal out opening hand
 	for i := 0; i < cardsInHandCount; i++ {
-		game.drawFromDeck("player1")
-		game.drawFromDeck("player2")
+		_ = game.drawFromDeck("player1")
+		_ = game.drawFromDeck("player2")
 	}
 	return
 }
 
-func buildShuffledDeck() (cards []Card) {
-	cards = make([]Card, len(Pips)*len(Suits))
+func buildShuffledDeck() ([]Card) {
+	cardCount := len(Pips)*len(Suits)
+	unshuffled := make([]Card, cardCount)
 
 	for i, suit := range Suits {
 		for j, pip := range Pips {
-			cards[i*len(Suits)+j] = Card{suit: suit, pip: pip}
+			unshuffled[i*len(Pips)+j] = Card{suit, pip}
+			// fmt.Println(i*len(Pips)+j, Card{suit, pip})
 		}
 	}
 
-	randIndices := rand.Perm(len(Pips) * len(Suits))
+	randIndices := rand.Perm(cardCount)
+	shuffled := make([]Card, cardCount)
 	for i, index := range randIndices {
-		cards[index] = cards[i]
+		shuffled[index] = unshuffled[i]
 	}
-	return
+	fmt.Println(shuffled)
+	
+	return shuffled
 }
 
-func (game *Game) drawFromDeck(player string) {
-	card, _ := pop(&game.deck)
+func (game *Game) drawFromDeck(player string) (bool) {
+	card, deck, ok := pop(game.deck)
+	game.deck = deck
+	if (!ok) {
+		return ok
+	}
+	
+	fmt.Println("drawFromDeck:", player, card)
 	
 	if player == "player1" {
 		game.player1Hand = append(game.player1Hand, card)
 	} else {
 		game.player2Hand = append(game.player2Hand, card)
 	}
+	return true
 }
 
 // helper
-func pop(cards *[]Card) (card Card, ok bool) {
-	size := len(*cards)
+func pop(cards []Card) (Card, []Card, bool) {
+	size := len(cards)
 	if size <= 0 {
-		return
+		return Card{}, cards, false
 	}
-	x := (*cards)[:size-2]
-	card, cards = (*cards)[size-1], &x
-	ok = true
-	return
+	
+	return cards[size-1], cards[:size-1], true
 }
 
 // Score Calculation
@@ -232,8 +242,9 @@ var shellColors = map[string]string{
 	"red":    "31",
 }
 
+
 func (c Card) String() string {
-	return c.pip
+	//return c.pip
 	return colorStr(c.pip, shellColors[c.suit])
 }
 
@@ -243,6 +254,7 @@ func FormatCards(c []Card) string {
 }
 
 func justifyRight(s string, width int) string {
+	return s
 	return strings.Repeat(" ", width-len(s)) + s
 }
 

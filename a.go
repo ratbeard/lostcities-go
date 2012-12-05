@@ -13,6 +13,18 @@ var Suits = []string{"yellow", "white", "blue", "green", "red"}
 
 const cardsInHandCount = 5
 
+const (
+	Play    = 1
+	Discard = 2
+)
+
+type Move struct {
+	player   string
+	card     Card
+	action   int    // Play || Discard
+	drawFrom string // "yellow", etc, "deck"
+}
+
 type Card struct {
 	suit, pip string
 }
@@ -29,20 +41,20 @@ type Player struct {
 
 type Game struct {
 	// Hidden state:
-	deck         []Card
-	player1Hand  []Card
-	player2Hand  []Card	
-	
+	deck        []Card
+	player1Hand []Card
+	player2Hand []Card
+
 	// Board (discards are semi-hidden):
 	player1Plays map[string][]Card
 	player2Plays map[string][]Card
 	discards     map[string][]Card
-	
+
 	currentTurn string
-	
+
 	// Questionable:
-	player1      *Player
-	player2      *Player
+	player1 *Player
+	player2 *Player
 }
 
 func NewGame() (game *Game) {
@@ -60,14 +72,14 @@ func NewGame() (game *Game) {
 		_ = game.drawFromDeck("player1")
 		_ = game.drawFromDeck("player2")
 	}
-	
+
 	game.currentTurn = "player1"
-	
+
 	return
 }
 
-func buildShuffledDeck() ([]Card) {
-	cardCount := len(Pips)*len(Suits)
+func buildShuffledDeck() []Card {
+	cardCount := len(Pips) * len(Suits)
 	unshuffled := make([]Card, cardCount)
 
 	// Build that deck
@@ -84,29 +96,35 @@ func buildShuffledDeck() ([]Card) {
 	for i, index := range randIndices {
 		shuffled[i] = unshuffled[index]
 	}
-	
+
 	//fmt.Println(shuffled)
-	
+
 	/*
-	reversed := make([]Card, cardCount)
-	for i := 0; i < cardCount; i++ {
-		reversed[cardCount-1-i] = shuffled[i] 
-	}
-	fmt.Println("Top to bottom:", reversed)
+		reversed := make([]Card, cardCount)
+		for i := 0; i < cardCount; i++ {
+			reversed[cardCount-1-i] = shuffled[i] 
+		}
+		fmt.Println("Top to bottom:", reversed)
 	*/
-	
+
 	return shuffled
 }
 
-func (game *Game) drawFromDeck(player string) (bool) {
+func (game *Game) validMove(move *Move) (ok bool) {
+
+	ok = true
+	return
+}
+
+func (game *Game) drawFromDeck(player string) bool {
 	card, deck, ok := pop(game.deck)
 	game.deck = deck
-	if (!ok) {
+	if !ok {
 		return ok
 	}
-	
+
 	fmt.Println("drawFromDeck:", player, card)
-	
+
 	if player == "player1" {
 		game.player1Hand = append(game.player1Hand, card)
 	} else {
@@ -121,7 +139,7 @@ func pop(cards []Card) (Card, []Card, bool) {
 	if size <= 0 {
 		return Card{}, cards, false
 	}
-	
+
 	return cards[size-1], cards[:size-1], true
 }
 

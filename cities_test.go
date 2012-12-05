@@ -1,12 +1,11 @@
 package main
 
 import (
-	"testing"
-	"math/rand"
-	"time"
 	"fmt"
+	"math/rand"
+	"testing"
+	"time"
 )
-
 
 // Using rand.seed(0), game should look like:
 // player1Hand: [{green 7} {blue 4} {yellow 10} {red 9} {red s}]
@@ -19,23 +18,23 @@ func TestNewGame(t *testing.T) {
 	rand.Seed(time.Now().UTC().UnixNano())
 	rand.Seed(0)
 	g := NewGame()
-	
+
 	if len(g.player1Hand) != 5 {
 		t.Error("Wrong number of starting cards for player1", len(g.player1Hand))
 	}
-	
+
 	if len(g.player2Hand) != 5 {
 		t.Error("Wrong number of starting cards for player2", len(g.player2Hand))
 	}
-	
+
 	if len(g.deck) != (55) {
 		t.Error("Wrong number of cards left in deck", len(g.deck))
 	}
-	
+
 	if g.currentTurn != "player1" {
 		t.Error("player1 should always start ")
 	}
-	
+
 	//fmt.Printf("%#v", g.player1Hand)
 	//fmt.Println(g.player2Hand)
 	//fmt.Println(g.deck)
@@ -45,28 +44,38 @@ func TestExpectedDeckOrder(t *testing.T) {
 	rand.Seed(0)
 	g := NewGame()
 	var c Card
-	
+
 	c = Card{"green", "7"}
-	if g.player1Hand[0] != c  {
+	if g.player1Hand[0] != c {
 		t.Error("player1 unexpected card")
 	}
-	
+
 	c = Card{"blue", "8"}
-	if g.player2Hand[2] != c  {
+	if g.player2Hand[2] != c {
 		t.Error("player2 unexpected card")
 	}
 
 	c = Card{"yellow", "s"}
-	if g.deck[6] != c  {
+	if g.deck[6] != c {
 		t.Error("deck unexpected card")
 	}
 }
 
-func TestPlaying(t *testing.T) {
+func TestValidMove(t *testing.T) {
 	rand.Seed(0)
 	g := NewGame()
-	_ = g
-	
+	var move *Move
+
+	move = &Move{"player1", Card{"green", "7"}, Play, "deck"}
+	if !g.validMove(move) {
+		t.Error("is valid", move)
+	}
+
+	move = &Move{"player1", Card{"green", "7"}, Play, "yellow"}
+	if g.validMove(move) {
+		t.Error("trying to draw from an empty discard pile is invalid", move)
+	}
+
 	//player1Move := &Move{"player1", }
 	//g.PlayMove
 

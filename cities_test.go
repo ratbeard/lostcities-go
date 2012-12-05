@@ -89,6 +89,9 @@ func TestValidMove(t *testing.T) {
 	// Wrong turn, not legit
 	assertInvalidMove(t, game, &Move{"player2", game.player2Hand[0], PlayAction, "deck"})
 
+	// Bad player, not legit
+	assertInvalidMove(t, game, &Move{"xxx", game.player2Hand[0], PlayAction, "deck"})
+
 	// Playing card not in hand is not legit
 	assertInvalidMove(t, game, &Move{"player1", game.player2Hand[0], PlayAction, "deck"})
 	assertInvalidMove(t, game, &Move{"player1", game.deck[0], PlayAction, "deck"})

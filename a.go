@@ -264,11 +264,12 @@ var shellColors = map[string]string{
 }
 
 /*
-*/
+
 func (c Card) String() string {
 	//return c.pip
 	return colorStr(c.pip, shellColors[c.suit])
 }
+*/
 
 func FormatCards(c []Card) string {
 	s := fmt.Sprint(c)

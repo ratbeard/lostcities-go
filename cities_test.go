@@ -20,7 +20,6 @@ func TestNewGame(t *testing.T) {
 	rand.Seed(0)
 	g := NewGame()
 	
-	
 	if len(g.player1Hand) != 5 {
 		t.Error("Wrong number of starting cards for player1", len(g.player1Hand))
 	}
@@ -37,8 +36,30 @@ func TestNewGame(t *testing.T) {
 		t.Error("player1 should always start ")
 	}
 	
-	fmt.Println(g.player1Hand)
-	fmt.Println(g.player2Hand)
+	//fmt.Printf("%#v", g.player1Hand)
+	//fmt.Println(g.player2Hand)
+	//fmt.Println(g.deck)
+}
+
+func TestExpectedDeckOrder(t *testing.T) {
+	rand.Seed(0)
+	g := NewGame()
+	var c Card
+	
+	c = Card{"green", "7"}
+	if g.player1Hand[0] != c  {
+		t.Error("player1 unexpected card")
+	}
+	
+	c = Card{"blue", "8"}
+	if g.player2Hand[2] != c  {
+		t.Error("player2 unexpected card")
+	}
+
+	c = Card{"yellow", "s"}
+	if g.deck[6] != c  {
+		t.Error("deck unexpected card")
+	}
 }
 
 func TestPlaying(t *testing.T) {

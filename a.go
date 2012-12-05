@@ -84,7 +84,16 @@ func buildShuffledDeck() ([]Card) {
 	for i, index := range randIndices {
 		shuffled[i] = unshuffled[index]
 	}
-	fmt.Println(shuffled)
+	
+	//fmt.Println(shuffled)
+	
+	/*
+	reversed := make([]Card, cardCount)
+	for i := 0; i < cardCount; i++ {
+		reversed[cardCount-1-i] = shuffled[i] 
+	}
+	fmt.Println("Top to bottom:", reversed)
+	*/
 	
 	return shuffled
 }
@@ -254,7 +263,8 @@ var shellColors = map[string]string{
 	"red":    "31",
 }
 
-
+/*
+*/
 func (c Card) String() string {
 	//return c.pip
 	return colorStr(c.pip, shellColors[c.suit])

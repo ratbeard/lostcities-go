@@ -28,14 +28,21 @@ type Player struct {
 }
 
 type Game struct {
-	player1Hand  []Card
-	player2Hand  []Card
-	player1      *Player
-	player2      *Player
+	// Hidden state:
 	deck         []Card
+	player1Hand  []Card
+	player2Hand  []Card	
+	
+	// Board (discards are semi-hidden):
 	player1Plays map[string][]Card
 	player2Plays map[string][]Card
 	discards     map[string][]Card
+	
+	currentTurn string
+	
+	// Questionable:
+	player1      *Player
+	player2      *Player
 }
 
 func NewGame() (game *Game) {
@@ -53,6 +60,9 @@ func NewGame() (game *Game) {
 		_ = game.drawFromDeck("player1")
 		_ = game.drawFromDeck("player2")
 	}
+	
+	game.currentTurn = "player1"
+	
 	return
 }
 

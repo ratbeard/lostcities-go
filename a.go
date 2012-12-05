@@ -121,6 +121,11 @@ func (game *Game) validMove(move *Move) (ok bool) {
 		return
 	}
 
+	// Invalid move if bad action
+	if move.action != PlayAction && move.action != DiscardAction {
+		return
+	}
+
 	// Invalid move if draw deck is empty
 	if pile := game.pile(move.drawPile); len(pile) == 0 {
 		return

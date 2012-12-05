@@ -92,6 +92,9 @@ func TestValidMove(t *testing.T) {
 	// Playing card not in hand is not legit
 	assertInvalidMove(t, game, &Move{"player1", game.player2Hand[0], PlayAction, "deck"})
 	assertInvalidMove(t, game, &Move{"player1", game.deck[0], PlayAction, "deck"})
+
+	// Trying something other than Play or Discard is not legit
+	assertInvalidMove(t, game, &Move{"player1", game.player1Hand[0], 3, "deck"})
 }
 
 // Helpers

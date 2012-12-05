@@ -42,41 +42,37 @@ func TestNewGame(t *testing.T) {
 
 func TestExpectedDeckOrder(t *testing.T) {
 	rand.Seed(0)
-	g := NewGame()
-	var c Card
+	game := NewGame()
+	var card Card
 
-	c = Card{"green", "7"}
-	if g.player1Hand[0] != c {
+	card = Card{"green", "7"}
+	if game.player1Hand[0] != card {
 		t.Error("player1 unexpected card")
 	}
 
-	c = Card{"blue", "8"}
-	if g.player2Hand[2] != c {
+	card = Card{"blue", "8"}
+	if game.player2Hand[2] != card {
 		t.Error("player2 unexpected card")
 	}
 
-	c = Card{"yellow", "s"}
-	if g.deck[6] != c {
+	card = Card{"yellow", "s"}
+	if game.deck[6] != card {
 		t.Error("deck unexpected card")
 	}
 }
 
 func TestValidMove(t *testing.T) {
 	rand.Seed(0)
-	g := NewGame()
+	game := NewGame()
 	var move *Move
 
 	move = &Move{"player1", Card{"green", "7"}, Play, "deck"}
-	if !g.validMove(move) {
+	if !game.validMove(move) {
 		t.Error("is valid", move)
 	}
 
 	move = &Move{"player1", Card{"green", "7"}, Play, "yellow"}
-	if g.validMove(move) {
+	if game.validMove(move) {
 		t.Error("trying to draw from an empty discard pile is invalid", move)
 	}
-
-	//player1Move := &Move{"player1", }
-	//g.PlayMove
-
 }

@@ -125,14 +125,14 @@ func TestPlayingInvalidMove(t *testing.T) {
 func TestPlayingValidMove(t *testing.T) {
 	rand.Seed(0)
 	game := NewGame()
-	move := &Move{"player1", game.player1Hand[0], PlayAction, "yellow"}
+	move := &Move{"player1", game.player1Hand[0], PlayAction, "deck"}
 
 	err := game.PlayMove(move)
 	if err != nil {
-		t.Error("Playing an valid move should not return an error")
+		t.Error("Playing a valid move should not return an error", err)
 	}
 	if game.currentTurn != "player2" {
-		t.Error("Playing an valid move should advance game turn")
+		t.Error("Playing a valid move should advance game turn")
 	}
 }
 
@@ -141,8 +141,9 @@ func TestTurnsAndGameEnd(t *testing.T) {
 	game := NewGame()
 	var turn string
 	var hand []Card
+	var move *Move
 
-	for i := 0; i < 45; i++ {
+	for i := 0; i < 55; i++ {
 		if i%2 == 0 {
 			turn, hand = "player1", game.player1Hand
 		} else {
@@ -155,7 +156,8 @@ func TestTurnsAndGameEnd(t *testing.T) {
 		}
 
 		// Play a move
-		_ = hand
+		move = 	&Move{turn, hand[0], PlayAction, "deck"}
+		game.PlayMove(move)
 	}
 
 	// Check end game state

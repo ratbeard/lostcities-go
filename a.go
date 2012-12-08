@@ -140,7 +140,24 @@ func (game *Game) PlayMove(move *Move) error {
 	if err := game.CheckMove(move); err != nil {
 		return err
 	}
-
+	
+	// Perform the play/discard
+	
+	// Perform the draw
+	game.drawFromDeck(move.player)
+	
+	// Switch turns
+	if game.currentTurn == "player1" {
+		game.currentTurn = "player2"
+	} else {
+		game.currentTurn = "player1"
+	}
+	
+	// Check if done
+	if len(game.deck) == 0 {
+		game.done = true
+	}
+	
 	return nil
 }
 

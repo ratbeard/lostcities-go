@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"math/rand"
 	"strconv"
@@ -51,7 +52,7 @@ type Game struct {
 	discards     map[string][]Card
 
 	currentTurn string
-	done bool
+	done        bool
 
 	// Questionable:
 	player1 *Player
@@ -111,29 +112,36 @@ func buildShuffledDeck() []Card {
 	return shuffled
 }
 
-func (game *Game) validMove(move *Move) (ok bool) {
-	// Invalid move if wrong turn
+func (game *Game) CheckMove(move *Move) error {
+	if game.done {
+		return errors.New("The game is over")
+	}
+
 	if move.player != game.currentTurn {
-		return
+		return errors.New("Wrong turn")
 	}
 
-	// Invalid move if card not in hand 
 	if !hasCard(game.hand(move.player), move.card) {
-		return
+		return errors.New("Card not in hand")
 	}
 
-	// Invalid move if bad action
 	if move.action != PlayAction && move.action != DiscardAction {
-		return
+		return errors.New("Invalid action")
 	}
 
-	// Invalid move if draw deck is empty
 	if pile := game.pile(move.drawPile); len(pile) == 0 {
-		return
+		return errors.New("Cannot draw from empty pile")
 	}
 
-	ok = true
-	return
+	return nil
+}
+
+func (game *Game) PlayMove(move *Move) error {
+	if err := game.CheckMove(move); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func hasCard(cards []Card, card Card) bool {

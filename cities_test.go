@@ -108,6 +108,34 @@ func TestValidMove(t *testing.T) {
 	game.discards["yellow"] = []Card{}
 }
 
+func TestPlayingInvalidMove(t *testing.T) {
+	rand.Seed(0)
+	game := NewGame()
+	move := &Move{"player2", game.player1Hand[0], PlayAction, "yellow"}
+
+	err := game.PlayMove(move)
+	if err == nil {
+		t.Error("Playing an invalid move should return an error")
+	}
+	if game.currentTurn != "player1" {
+		t.Error("Playing an invalid move should not advance game turn")
+	}
+}
+
+func TestPlayingValidMove(t *testing.T) {
+	rand.Seed(0)
+	game := NewGame()
+	move := &Move{"player1", game.player1Hand[0], PlayAction, "yellow"}
+
+	err := game.PlayMove(move)
+	if err != nil {
+		t.Error("Playing an valid move should not return an error")
+	}
+	if game.currentTurn != "player2" {
+		t.Error("Playing an valid move should advance game turn")
+	}
+}
+
 func TestTurnsAndGameEnd(t *testing.T) {
 	rand.Seed(0)
 	game := NewGame()
@@ -141,13 +169,13 @@ func TestTurnsAndGameEnd(t *testing.T) {
 
 // Helpers
 func assertValidMove(t *testing.T, game *Game, move *Move) {
-	if !game.validMove(move) {
-		t.Error("is valid", move)
+	if err := game.CheckMove(move); err != nil {
+		t.Error("Should be a valid move:", move, "got:", err)
 	}
 }
 
 func assertInvalidMove(t *testing.T, game *Game, move *Move) {
-	if game.validMove(move) {
-		t.Error("is an invalid move", move)
+	if err := game.CheckMove(move); err == nil {
+		t.Error("Should be an invalid move:", move)
 	}
 }

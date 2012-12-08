@@ -99,14 +99,44 @@ func TestValidMove(t *testing.T) {
 	// Trying something other than Play or Discard is not legit
 	assertInvalidMove(t, game, &Move{"player1", game.player1Hand[0], 3, "deck"})
 
-	// Drawing from empty discard pile is not legit
+	// Drawing from an empty discard pile is not legit
 	assertInvalidMove(t, game, &Move{"player1", game.player1Hand[0], PlayAction, "yellow"})
 
-	// Drawing from non-empty discard pile is legit
+	// Drawing from a non-empty discard pile is legit
 	game.discards["yellow"] = []Card{Card{"yellow", "1"}}
 	assertValidMove(t, game, &Move{"player1", game.player1Hand[0], PlayAction, "yellow"})
 	game.discards["yellow"] = []Card{}
+}
 
+func TestTurnsAndGameEnd(t *testing.T) {
+	rand.Seed(0)
+	game := NewGame()
+	var turn string
+	var hand []Card
+
+	for i := 0; i < 45; i++ {
+		if i%2 == 0 {
+			turn, hand = "player1", game.player1Hand
+		} else {
+			turn, hand = "player2", game.player2Hand
+		}
+
+		// Check its the correct turn
+		if game.currentTurn != turn {
+			t.Errorf("Turn #%d should be %s's turn", i, turn)
+		}
+
+		// Play a move
+		_ = hand
+	}
+
+	// Check end game state
+	if len(game.deck) > 0 {
+		t.Errorf("Deck should be empty, %d cards left", len(game.deck))
+	}
+	if !game.done {
+		t.Error("Game should be done")
+	}
 }
 
 // Helpers

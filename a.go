@@ -40,7 +40,7 @@ type Player struct {
 }
 
 type Game struct {
-	// Hidden state:
+	// Secret state:
 	deck        []Card
 	player1Hand []Card
 	player2Hand []Card
@@ -51,6 +51,7 @@ type Game struct {
 	discards     map[string][]Card
 
 	currentTurn string
+	done bool
 
 	// Questionable:
 	player1 *Player

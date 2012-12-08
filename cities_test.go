@@ -76,6 +76,41 @@ func TestHasCard(t *testing.T) {
 	}
 }
 
+func TestHighestCard(t *testing.T) {
+	var cards []Card
+	var card, card1, card2 Card
+
+	card1 = Card{"green", "8"}
+	card2 = Card{"green", "7"}
+	if !card1.higherThan(card2) {
+		t.Error("8 is higher than 7")
+	}
+
+	card1 = Card{"green", "10"}
+	card2 = Card{"green", "7"}
+	if !card1.higherThan(card2) {
+		t.Error("10 is higher than 7")
+	}
+
+	card1 = Card{"green", "1"}
+	card2 = Card{"green", "s"}
+	if !card1.higherThan(card2) {
+		t.Error("s is higher than 1")
+	}
+
+	card1 = Card{"green", "s"}
+	card2 = Card{"green", "s"}
+	if !card1.higherThan(card2) {
+		t.Error("s is higher than s")
+	}
+
+	cards = []Card{{"green", "s"}, {"green", "8"}}
+	card = Card{"green", "10"}
+	if !highestCard(cards, card) {
+		t.Error("10 is higher than 8")
+	}
+}
+
 func TestValidMove(t *testing.T) {
 	rand.Seed(0)
 	game := NewGame()
@@ -106,6 +141,27 @@ func TestValidMove(t *testing.T) {
 	game.discards["yellow"] = []Card{Card{"yellow", "1"}}
 	assertValidMove(t, game, &Move{"player1", game.player1Hand[0], PlayAction, "yellow"})
 	game.discards["yellow"] = []Card{}
+
+	// Playing a card thats lower than a card you've already played is not legit
+	game.player1Plays["green"] = []Card{Card{"green", "8"}}
+	assertInvalidMove(t, game, &Move{"player1", Card{"green", "7"}, PlayAction, "deck"})
+	game.player1Plays["green"] = []Card{}
+
+	// Playing a card thats higher than a card you've already played is legit
+	game.player1Plays["green"] = []Card{Card{"green", "6"}}
+	assertValidMove(t, game, &Move{"player1", Card{"green", "7"}, PlayAction, "deck"})
+	game.player1Plays["green"] = []Card{}
+
+	// Playing a card thats lower than a card thats been discarded is legit
+	game.discards["green"] = []Card{Card{"green", "8"}}
+	assertValidMove(t, game, &Move{"player1", Card{"green", "7"}, PlayAction, "deck"})
+	game.discards["green"] = []Card{}
+
+	// Playing a card thats lower than a card that your opponent has played is legit
+	game.player2Plays["green"] = []Card{Card{"green", "8"}}
+	assertValidMove(t, game, &Move{"player1", Card{"green", "7"}, PlayAction, "deck"})
+	game.player2Plays["green"] = []Card{}
+
 }
 
 func TestPlayingInvalidMove(t *testing.T) {
@@ -156,7 +212,7 @@ func TestTurnsAndGameEnd(t *testing.T) {
 		}
 
 		// Play a move
-		move = 	&Move{turn, hand[0], PlayAction, "deck"}
+		move = &Move{turn, hand[0], PlayAction, "deck"}
 		game.PlayMove(move)
 	}
 

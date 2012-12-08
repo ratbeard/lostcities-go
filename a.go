@@ -62,10 +62,10 @@ type Game struct {
 func NewGame() (game *Game) {
 	game = new(Game)
 
-	// Get Shuffled Deck
+	// Get shuffled deck
 	game.deck = buildShuffledDeck()
 
-	// Initialize the Players
+	// Initialize the players
 	game.player1 = new(Player)
 	game.player2 = new(Player)
 
@@ -75,7 +75,10 @@ func NewGame() (game *Game) {
 		_ = game.drawFromDeck("player2")
 	}
 
+	// Initialize state
 	game.currentTurn = "player1"
+	game.player1Plays = make(map[string][]Card)
+	game.player2Plays = make(map[string][]Card)
 	game.discards = make(map[string][]Card)
 	return
 }
@@ -126,7 +129,12 @@ func (game *Game) CheckMove(move *Move) error {
 	}
 
 	if move.action != PlayAction && move.action != DiscardAction {
-		return errors.New("Invalid action")
+		return errors.New("Invalid action.  Must be play or discard")
+	}
+
+	playPile := game.player1Plays[move.card.suit]
+	if !highestCard(playPile, move.card) {
+		return errors.New("A higher card has been played in that pile")
 	}
 
 	if pile := game.pile(move.drawPile); len(pile) == 0 {
@@ -140,24 +148,24 @@ func (game *Game) PlayMove(move *Move) error {
 	if err := game.CheckMove(move); err != nil {
 		return err
 	}
-	
+
 	// Perform the play/discard
-	
+
 	// Perform the draw
 	game.drawFromDeck(move.player)
-	
+
 	// Switch turns
 	if game.currentTurn == "player1" {
 		game.currentTurn = "player2"
 	} else {
 		game.currentTurn = "player1"
 	}
-	
+
 	// Check if done
 	if len(game.deck) == 0 {
 		game.done = true
 	}
-	
+
 	return nil
 }
 
@@ -168,6 +176,36 @@ func hasCard(cards []Card, card Card) bool {
 		}
 	}
 	return false
+}
+
+// Kinda janky string comparison.
+// Need to rewrite "10" and "s" to next/prev ascii char
+// "s".higherThan("s") => true
+func (card *Card) higherThan(other Card) bool {
+	a, b := card.pip, other.pip
+	if a == "s" {
+		a = "0"
+	}
+	if b == "s" {
+		b = "0"
+	}
+	if a == "10" {
+		a = ":"
+	}
+	if b == "10" {
+		b = ":"
+	}
+	return a >= b
+}
+
+func highestCard(cards []Card, card Card) bool {
+	for _, c := range cards {
+		if c.higherThan(card) {
+			// fmt.Println(card, "Not higher than", c)
+			return false
+		}
+	}
+	return true
 }
 
 func (game *Game) hand(name string) []Card {

@@ -161,7 +161,6 @@ func TestValidMove(t *testing.T) {
 	game.player2Plays["green"] = []Card{Card{"green", "8"}}
 	assertValidMove(t, game, &Move{"player1", Card{"green", "7"}, PlayAction, "deck"})
 	game.player2Plays["green"] = []Card{}
-
 }
 
 func TestPlayingInvalidMove(t *testing.T) {
@@ -181,15 +180,44 @@ func TestPlayingInvalidMove(t *testing.T) {
 func TestPlayingValidMove(t *testing.T) {
 	rand.Seed(0)
 	game := NewGame()
-	move := &Move{"player1", game.player1Hand[0], PlayAction, "deck"}
+	card := game.player1Hand[0]
+	move := &Move{"player1", card, PlayAction, "deck"}
 
+	// Turn 1 - play a card
 	err := game.PlayMove(move)
 	if err != nil {
 		t.Error("Playing a valid move should not return an error", err)
 	}
+
+	// Play puts card in play pile
+	if len(game.player1Plays[card.suit]) != 1 {
+		t.Error("Playing a card should put it in the play pile")
+	}
+	if game.player1Plays[card.suit][0] != card {
+		t.Error("Playing a card should put it in the play pile")
+	}
 	if game.currentTurn != "player2" {
 		t.Error("Playing a valid move should advance game turn")
 	}
+
+	// Turn 2 - discard a card
+	card = game.player2Hand[0]
+	move = &Move{"player2", card, DiscardAction, "deck"}
+	err = game.PlayMove(move)
+	if err != nil {
+		t.Error("Playing a valid move should not return an error", err)
+	}
+
+	if len(game.discards[card.suit]) != 1 {
+		t.Error("Discarding a card should put it in the discard pile")
+	}
+	if game.discards[card.suit][0] != card {
+		t.Error("Discarding a card should put it in the discard pile")
+	}
+	if game.currentTurn != "player1" {
+		t.Error("Playing a valid move should advance game turn")
+	}
+
 }
 
 func TestTurnsAndGameEnd(t *testing.T) {
@@ -199,11 +227,11 @@ func TestTurnsAndGameEnd(t *testing.T) {
 	var hand []Card
 	var move *Move
 
-	for i := 0; i < 55; i++ {
+	for i := 1; i < 56; i++ {
 		if i%2 == 0 {
-			turn, hand = "player1", game.player1Hand
-		} else {
 			turn, hand = "player2", game.player2Hand
+		} else {
+			turn, hand = "player1", game.player1Hand
 		}
 
 		// Check its the correct turn
@@ -212,8 +240,11 @@ func TestTurnsAndGameEnd(t *testing.T) {
 		}
 
 		// Play a move
-		move = &Move{turn, hand[0], PlayAction, "deck"}
-		game.PlayMove(move)
+		move = &Move{turn, hand[0], DiscardAction, "deck"}
+		e := game.PlayMove(move)
+		if e != nil {
+			t.Error("Unexpected error while discarding")
+		}
 	}
 
 	// Check end game state

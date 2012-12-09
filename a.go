@@ -150,6 +150,16 @@ func (game *Game) PlayMove(move *Move) error {
 	}
 
 	// Perform the play/discard
+	card := move.card
+	if move.action == DiscardAction {
+		game.discards[card.suit] = append(game.discards[card.suit], card)
+	} else {
+		if move.player == "player1" {
+			game.player1Plays[card.suit] = append(game.player1Plays[card.suit], card)
+		} else {
+			game.player2Plays[card.suit] = append(game.player2Plays[card.suit], card)
+		}
+	}
 
 	// Perform the draw
 	game.drawFromDeck(move.player)

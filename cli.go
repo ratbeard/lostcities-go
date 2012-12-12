@@ -3,6 +3,6 @@ package main
 func main() {
 
 	g := NewConsoleGame()
-	g.hi()
+	g.Start()
 
 }

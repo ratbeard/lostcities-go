@@ -281,41 +281,7 @@ func printScore(plays map[string]*Pile) {
 	}
 }
 
-func printScreen(game *Game) {
-	// Clear the screen
-	fmt.Print("\033[2J\033[H")
 
-	fmt.Print("             Player 1                     Player 2\n\n")
-
-	for _, color := range Suits {
-		printR(game, color)
-	}
-
-	fmt.Print("\nYour hand: ", colorStr("6", White), " ", colorStr("10", White), " ", colorStr("8", Green))
-	fmt.Print("\n")
-	fmt.Print("Pick a card to draw: (w)hite, (y)ellow, (r)ed or (d)eck:\n")
-	fmt.Print("Pick a card to play: (1-5)\n")
-	fmt.Print("\n")
-}
-
-func printR(game *Game, color string) {
-	width := 26
-	cards := FormatCards(*game.player1Plays[color])
-	justified := justifyRight(cards, width)
-	colored := colorStr(justified, shellColors[color])
-	fmt.Print(colored)
-
-	discards := game.discards[color].Cards
-	topDiscard := "   "
-	if len(discards) > 0 {
-		topDiscard = discards[len(discards)-1].pip
-		topDiscard = colorStr(justifyRight(topDiscard, 3), shellColors[color])
-	}
-	fmt.Print("  |", topDiscard, " |  ")
-
-	fmt.Print(colorStr(FormatCards(*game.player2Plays[color]), shellColors[color]))
-	fmt.Println()
-}
 
 //
 // Coloring / Formatting
@@ -360,6 +326,7 @@ func colorEscape(str string) string {
 	return "\033[" + str + "m"
 }
 
-func colorStr(str string, c string) string {
-	return colorEscape(c) + str + colorEscape(Reset)
+func colorStr(str string, color string) string {
+	cc := shellColors[color]
+	return colorEscape(cc) + str + colorEscape(Reset)
 }

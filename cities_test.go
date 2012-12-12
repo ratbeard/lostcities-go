@@ -138,29 +138,35 @@ func TestValidMove(t *testing.T) {
 	assertInvalidMove(t, game, &Move{"player1", game.player1Hand.Cards[0], PlayAction, "yellow"})
 
 	// Drawing from a non-empty discard pile is legit
-	game.discards["yellow"] = []Card{Card{"yellow", "1"}}
+	var p Pile
+	p = game.discards["yellow"]
+	p.Add(Card{"yellow", "1"})
 	assertValidMove(t, game, &Move{"player1", game.player1Hand.Cards[0], PlayAction, "yellow"})
-	game.discards["yellow"] = []Card{}
+	_, _ = p.Pop()
 
 	// Playing a card thats lower than a card you've already played is not legit
-	game.player1Plays["green"] = []Card{Card{"green", "8"}}
+	p = game.discards["yellow"]
+	p.Add(Card{"green", "8"})
 	assertInvalidMove(t, game, &Move{"player1", Card{"green", "7"}, PlayAction, "deck"})
-	game.player1Plays["green"] = []Card{}
+	_, _ = p.Pop()
 
 	// Playing a card thats higher than a card you've already played is legit
-	game.player1Plays["green"] = []Card{Card{"green", "6"}}
+	p = game.player1Plays["green"]
+	p.Add(Card{"green", "6"})
 	assertValidMove(t, game, &Move{"player1", Card{"green", "7"}, PlayAction, "deck"})
-	game.player1Plays["green"] = []Card{}
+	_, _ = p.Pop()
 
 	// Playing a card thats lower than a card thats been discarded is legit
-	game.discards["green"] = []Card{Card{"green", "8"}}
+	p = game.discards["green"]
+	p.Add(Card{"green", "8"})
 	assertValidMove(t, game, &Move{"player1", Card{"green", "7"}, PlayAction, "deck"})
-	game.discards["green"] = []Card{}
+	_, _ = p.Pop()
 
 	// Playing a card thats lower than a card that your opponent has played is legit
-	game.player2Plays["green"] = []Card{Card{"green", "8"}}
+	p = game.player2Plays["green"]
+	p.Add(Card{"green", "8"})
 	assertValidMove(t, game, &Move{"player1", Card{"green", "7"}, PlayAction, "deck"})
-	game.player2Plays["green"] = []Card{}
+	_, _ = p.Pop()
 }
 
 func TestPlayingInvalidMove(t *testing.T) {
@@ -180,19 +186,20 @@ func TestPlayingInvalidMove(t *testing.T) {
 func TestPlayingValidMove(t *testing.T) {
 	rand.Seed(0)
 	game := NewGame()
-	card := game.player1Hand.Cards[0]
-	move := &Move{"player1", card, PlayAction, "deck"}
+	var card Card
+	var move *Move
+
 
 	// Turn 1 - Player1 plays {green 7}
+	card = Card{"green", "7"}
+	move = &Move{"player1", card, PlayAction, "deck"}
+	fmt.Println("About to play", move)
 	err := game.PlayMove(move)
 	if err != nil {
-		t.Error("Playing a valid move should not return an error", err)
+		t.Fatal("Playing a valid move should not return an error", err)
 	}
-	if len(game.player1Plays[card.suit]) != 1 {
-		t.Error("Playing a card should put it in the play pile")
-	}
-	if game.player1Plays[card.suit][0] != card {
-		t.Error("Playing a card should put it in the play pile")
+	if p := game.player1Plays[card.suit]; !p.Has(card) {
+		t.Fatal("Playing a card should put it in the play pile", card, p)
 	}
 
 	// Turn 2 - Player2 discards {yellow 7}
@@ -202,10 +209,10 @@ func TestPlayingValidMove(t *testing.T) {
 	if err != nil {
 		t.Error("Playing a valid move should not return an error", err)
 	}
-	if len(game.discards[card.suit]) != 1 {
+	if len(game.discards[card.suit].Cards) != 1 {
 		t.Fatal("Discarding a card should put it in the discard pile")
 	}
-	if game.discards[card.suit][0] != card {
+	if game.discards[card.suit].Cards[0] != card {
 		t.Error("Discarding a card should put it in the discard pile")
 	}
 
@@ -216,10 +223,10 @@ func TestPlayingValidMove(t *testing.T) {
 	if err != nil {
 		t.Error("Playing a valid move should not return an error", err)
 	}
-	if len(game.discards[card.suit]) != 2 {
+	if len(game.discards[card.suit].Cards) != 2 {
 		t.Fatal("Discarding a card should put it in the discard pile")
 	}
-	if game.discards[card.suit][1] != card {
+	if game.discards[card.suit].Cards[1] != card {
 		t.Error("Discarding a card should put it in the discard pile")
 	}
 
@@ -230,16 +237,16 @@ func TestPlayingValidMove(t *testing.T) {
 	if err != nil {
 		t.Error("Playing a valid move should not return an error", err)
 	}
-	if len(game.player2Plays[card.suit]) != 1 {
+	if len(game.player2Plays[card.suit].Cards) != 1 {
 		t.Fatal("Playing a card should put it in the play pile")
 	}
-	if game.player2Plays[card.suit][0] != card {
+	if game.player2Plays[card.suit].Cards[0] != card {
 		t.Error("Playing a card should put it in the play pile")
 	}
-	if len(game.discards[move.drawPile]) != 1 {
+	if len(game.discards[move.drawPile].Cards) != 1 {
 		t.Fatal("Drawing from discard pile removes the top card from the pile")
 	}
-	if game.discards[move.drawPile][0] == card {
+	if game.discards[move.drawPile].Cards[0] == card {
 		t.Fatal("Drawing from discard pile removes the top card from the pile")
 	}
 

@@ -77,14 +77,14 @@ func (pile *Pile) MoveTopCardTo(other *Pile) {
 	card, _ := pile.Pop()
 	other.Add(card)
 }
+// end Pile
 
 type Game struct {
+	// Secret state
 	deck, player1Hand, player2Hand Pile
 
-	// Board (discards are semi-hidden):
-	player1Plays map[string][]Card
-	player2Plays map[string][]Card
-	discards     map[string][]Card
+	// Board, discards are semi-secret depending on your memory
+	discards, player1Plays, player2Plays map[string]Pile
 
 	currentTurn string
 	done        bool
@@ -93,6 +93,27 @@ type Game struct {
 	player1 *Player
 	player2 *Player
 }
+
+func (pile *Pile) Score() (score int) {
+	cards := pile.Cards
+	if len(cards) == 0 {
+		return
+	}
+	
+	score = -20
+	multiplier := 1
+	for _, card := range cards {
+		if card.pip == "s" {
+			multiplier += 1
+		} else {
+			value, _ := strconv.Atoi(card.pip)
+			score += value
+		}
+	}
+	score *= multiplier
+	return
+}
+
 
 func NewGame() (game *Game) {
 	game = new(Game)
@@ -112,9 +133,9 @@ func NewGame() (game *Game) {
 
 	// Initialize state
 	game.currentTurn = "player1"
-	game.player1Plays = make(map[string][]Card)
-	game.player2Plays = make(map[string][]Card)
-	game.discards = make(map[string][]Card)
+	game.player1Plays = make(map[string]Pile)
+	game.player2Plays = make(map[string]Pile)
+	game.discards = make(map[string]Pile)
 	return
 }
 
@@ -163,12 +184,12 @@ func (game *Game) CheckMove(move *Move) error {
 		return errors.New("Invalid action.  Must be play or discard")
 	}
 
-	playPile := game.player1Plays[move.card.suit]
+	playPile := game.player1Plays[move.card.suit].Cards
 	if !highestCard(playPile, move.card) {
 		return errors.New("A higher card has been played in that pile")
 	}
 
-	if pile := game.pileFor(move.drawPile); len(pile) == 0 {
+	if p := game.pileFor(move.drawPile); len(p.Cards) == 0 {
 		return errors.New("Cannot draw from empty pile")
 	}
 
@@ -182,15 +203,17 @@ func (game *Game) PlayMove(move *Move) error {
 
 	// Perform the play/discard
 	card := move.card
+	var p Pile
 	if move.action == DiscardAction {
-		game.discards[card.suit] = append(game.discards[card.suit], card)
-	} else {
-		if move.player == "player1" {
-			game.player1Plays[card.suit] = append(game.player1Plays[card.suit], card)
-		} else {
-			game.player2Plays[card.suit] = append(game.player2Plays[card.suit], card)
-		}
+		p = game.discards[card.suit]
+	} else if move.player == "player1" {
+		p = game.player1Plays[card.suit]
+	} else if move.player == "player2" {
+		p = game.player2Plays[card.suit]
 	}
+	fmt.Println("Playing move!", move, p)
+	p.Add(card)
+	fmt.Println("now:", p)
 
 	// Perform the draw
 	game.draw(move.player, move.drawPile)
@@ -208,15 +231,6 @@ func (game *Game) PlayMove(move *Move) error {
 	}
 
 	return nil
-}
-
-func hasCard(cards []Card, card Card) bool {
-	for _, c := range cards {
-		if c == card {
-			return true
-		}
-	}
-	return false
 }
 
 // Kinda janky string comparison.
@@ -258,23 +272,18 @@ func (game *Game) handFor(name string) *Pile {
 	return nil
 }
 
-func (game *Game) pileFor(name string) []Card {
+func (game *Game) pileFor(name string) *Pile {
 	if name == "deck" {
-		return game.deck.Cards
+		return &game.deck
 	}
-	return game.discards[name]
+	x := game.discards[name]
+	return &x
 }
 
 func (game *Game) draw(player, pileName string) {
-	var card Card
-
-	if pileName == "deck" {
-		card, _ = game.deck.Pop()
-	} else {
-		pile := game.pileFor(pileName)
-		card, pile, _ = pop(pile)
-		game.discards[pileName] = pile
-	}
+	p := game.pileFor(pileName)
+	card, _ := p.Pop()
+	//fmt.Println("draw", card, pileName, len(p.Cards))
 
 	if player == "player1" {
 		game.player1Hand.Add(card)
@@ -283,46 +292,18 @@ func (game *Game) draw(player, pileName string) {
 	}
 }
 
-// helper
-func pop(cards []Card) (Card, []Card, bool) {
-	size := len(cards)
-	if size <= 0 {
-		return Card{}, cards, false
-	}
 
-	return cards[size-1], cards[:size-1], true
-}
-
-// Score Calculation
-// ========
-func calculateScore(hand map[string][]Card) (score int) {
-	for _, cards := range hand {
-		score += calculateScoreForSuit(cards)
-	}
-	return
-}
-
-func calculateScoreForSuit(cards []Card) (score int) {
-	if len(cards) == 0 {
-		return
-	}
-	score = -20
-	multiplier := 1
-	for _, card := range cards {
-		if card.pip == "s" {
-			multiplier += 1
-		} else {
-			value, _ := strconv.Atoi(card.pip)
-			score += value
-		}
-	}
-	score *= multiplier
-	return
+func calculateScore(hand map[string]Pile) (score int) {
+      for _, pile := range hand {
+				score += pile.Score()
+      }
+      return
 }
 
 func main() {
 	rand.Seed(time.Now().UTC().UnixNano())
-
+	
+	/*
 	game := new(Game)
 	game.player1Plays = map[string][]Card{
 		"yellow": []Card{{"yellow", "s"}, {"yellow", "s"}, {"yellow", "s"}, {"yellow", "1"}, {"yellow", "2"}, {"yellow", "3"}, {"yellow", "4"}, {"yellow", "5"}, {"yellow", "6"}, {"yellow", "7"}, {"yellow", "8"}, {"yellow", "9"}, {"yellow", "10"}},
@@ -348,6 +329,7 @@ func main() {
 
 	printScreen(game)
 	printScores(game)
+	*/
 	// fmt.Scan(&i)
 	fmt.Println()
 }
@@ -364,13 +346,14 @@ func printScores(game *Game) {
 	fmt.Println()
 }
 
-func printScore(plays map[string][]Card) {
+func printScore(plays map[string]Pile) {
 	var score int
 	score = calculateScore(plays)
 	fmt.Print(justifyRight(strconv.Itoa(score), 4), "  =  ")
 
 	for _, color := range Suits {
-		score = calculateScoreForSuit(plays[color])
+		p := plays[color]
+		score = p.Score()
 		fmt.Print(colorStr(justifyRight(strconv.Itoa(score), 4), shellColors[color]), " ")
 	}
 }
@@ -399,10 +382,10 @@ func printR(game *Game, color string) {
 	colored := colorStr(justified, shellColors[color])
 	fmt.Print(colored)
 
-	discards := game.discards[color]
+	discards := game.discards[color].Cards
 	topDiscard := "   "
 	if len(discards) > 0 {
-		topDiscard = discards[len(discards)-1].pip
+		topDiscard = discards[len(discards) - 1].pip
 		topDiscard = colorStr(justifyRight(topDiscard, 3), shellColors[color])
 	}
 	fmt.Print("  |", topDiscard, " |  ")
@@ -439,7 +422,8 @@ func (c Card) String() string {
 }
 */
 
-func FormatCards(c []Card) string {
+func FormatCards(p Pile) string {
+	c := p.Cards
 	s := fmt.Sprint(c)
 	return s[1 : len(s)-1]
 }

@@ -134,7 +134,6 @@ func (game *Game) PlayMove(move *Move) error {
 	return nil
 }
 
-
 func (game *Game) draw(player, pileName string) {
 	pile := game.drawPileFor(pileName)
 	hand := game.handFor(player)
@@ -142,7 +141,6 @@ func (game *Game) draw(player, pileName string) {
 	//fmt.Println("draw", card, pileName, len(p.Cards))
 	hand.Add(card)
 }
-
 
 // Kinda janky string comparison.
 // Need to rewrite "10" and "s" to next/prev ascii char
@@ -163,7 +161,6 @@ func (card *Card) higherThan(other Card) bool {
 	}
 	return a >= b
 }
-
 
 // Helper getters
 func (game *Game) playPileFor(player, suit string) *Pile {
@@ -190,14 +187,12 @@ func (game *Game) drawPileFor(name string) *Pile {
 	return game.discards[name]
 }
 
-
 func calculateScore(hand map[string]*Pile) (score int) {
 	for _, pile := range hand {
 		score += pile.Score()
 	}
 	return
 }
-
 
 func buildShuffledDeck() Pile {
 	// Build that deck
@@ -227,12 +222,10 @@ func buildShuffledDeck() Pile {
 	return Pile{Cards: shuffled}
 }
 
-
-
 // Console Game
 // ============
 
-func main() {
+func zmain() {
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	/*
@@ -265,7 +258,6 @@ func main() {
 	// fmt.Scan(&i)
 	fmt.Println()
 }
-
 
 func printScores(game *Game) {
 	fmt.Print("Player1 score: ")

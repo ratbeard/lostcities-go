@@ -22,6 +22,10 @@ var (
 	Suits = [...]string{"yellow", "white", "blue", "green", "red"}
 )
 
+type Card struct {
+	suit, pip string
+}
+
 type Move struct {
 	player   string
 	card     Card
@@ -29,21 +33,7 @@ type Move struct {
 	drawPile string // "yellow", etc, "deck"
 }
 
-type Card struct {
-	suit, pip string
-}
-
-type Deck struct {
-	cards []Card
-}
-
-type Player struct {
-	name string
-	hand []Card
-}
-
 // Game -->
-
 type Game struct {
 	// Secret state
 	deck, player1Hand, player2Hand Pile
@@ -53,10 +43,6 @@ type Game struct {
 
 	currentTurn string
 	done        bool
-
-	// Questionable:
-	player1 *Player
-	player2 *Player
 }
 
 func NewGame() (game *Game) {
@@ -74,10 +60,6 @@ func NewGame() (game *Game) {
 
 	// Get shuffled deck
 	game.deck = buildShuffledDeck()
-
-	// Initialize the players
-	game.player1 = new(Player)
-	game.player2 = new(Player)
 
 	// Deal out opening hand
 	for i := 0; i < cardInHandCount; i++ {

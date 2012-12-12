@@ -107,18 +107,14 @@ func (game *Game) PlayMove(move *Move) error {
 	}
 
 	// Perform the play/discard
-	card := move.card
+	suit := move.card.suit
 	var p *Pile
 	if move.action == DiscardAction {
-		p = game.discards[card.suit]
-	} else if move.player == "player1" {
-		p = game.player1Plays[card.suit]
-	} else if move.player == "player2" {
-		p = game.player2Plays[card.suit]
+		p = game.discards[suit]
+	} else {
+		p = game.playPileFor(move.player, suit)
 	}
-	//fmt.Println("Playing move!", move, p)
-	p.Add(card)
-	//fmt.Println("now:", p)
+	p.Add(move.card)
 
 	// Perform the draw
 	game.draw(move.player, move.drawPile)

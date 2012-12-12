@@ -72,34 +72,6 @@ func NewGame() (game *Game) {
 	return
 }
 
-func buildShuffledDeck() Pile {
-	// Build that deck
-	unshuffled := make([]Card, cardCount)
-	for i, suit := range Suits {
-		for j, pip := range Pips {
-			unshuffled[i*len(Pips)+j] = Card{suit, pip}
-		}
-	}
-
-	// Shuffle that deck
-	randIndices := rand.Perm(cardCount)
-	shuffled := make([]Card, cardCount)
-	for i, index := range randIndices {
-		shuffled[i] = unshuffled[index]
-	}
-
-	//fmt.Println(shuffled)
-	/*
-		reversed := make([]Card, cardCount)
-		for i := 0; i < cardCount; i++ {
-			reversed[cardCount-1-i] = shuffled[i] 
-		}
-		fmt.Println("Top to bottom:", reversed)
-	*/
-
-	return Pile{Cards: shuffled}
-}
-
 func (game *Game) CheckMove(move *Move) error {
 	if game.done {
 		return errors.New("The game is over")
@@ -117,15 +89,12 @@ func (game *Game) CheckMove(move *Move) error {
 		return errors.New("Invalid action.  Must be play or discard")
 	}
 
-	pile := game.player1Plays[move.card.suit]
-	if move.player == "player2" {
-		pile = game.player2Plays[move.card.suit]
-	}
-	if !pile.IsHighestCard(move.card) {
+	p := game.playPileFor(move.player, move.card.suit)
+	if !p.IsHighestCard(move.card) {
 		return errors.New("A higher card has been played in that pile")
 	}
 
-	if p := game.pileFor(move.drawPile); len(p.Cards) == 0 {
+	if p := game.drawPileFor(move.drawPile); len(p.Cards) == 0 {
 		return errors.New("Cannot draw from empty pile")
 	}
 
@@ -189,6 +158,16 @@ func (card *Card) higherThan(other Card) bool {
 	return a >= b
 }
 
+
+// Helper getters
+func (game *Game) playPileFor(player, suit string) *Pile {
+	h := game.player1Plays
+	if player == "player2" {
+		h = game.player2Plays
+	}
+	return h[suit]
+}
+
 func (game *Game) handFor(name string) *Pile {
 	if name == "player1" {
 		return &game.player1Hand
@@ -198,7 +177,7 @@ func (game *Game) handFor(name string) *Pile {
 	return nil
 }
 
-func (game *Game) pileFor(name string) *Pile {
+func (game *Game) drawPileFor(name string) *Pile {
 	if name == "deck" {
 		return &game.deck
 	}
@@ -206,7 +185,7 @@ func (game *Game) pileFor(name string) *Pile {
 }
 
 func (game *Game) draw(player, pileName string) {
-	p := game.pileFor(pileName)
+	p := game.drawPileFor(pileName)
 	card, _ := p.Pop()
 	//fmt.Println("draw", card, pileName, len(p.Cards))
 
@@ -256,6 +235,34 @@ func main() {
 	*/
 	// fmt.Scan(&i)
 	fmt.Println()
+}
+
+func buildShuffledDeck() Pile {
+	// Build that deck
+	unshuffled := make([]Card, cardCount)
+	for i, suit := range Suits {
+		for j, pip := range Pips {
+			unshuffled[i*len(Pips)+j] = Card{suit, pip}
+		}
+	}
+
+	// Shuffle that deck
+	randIndices := rand.Perm(cardCount)
+	shuffled := make([]Card, cardCount)
+	for i, index := range randIndices {
+		shuffled[i] = unshuffled[index]
+	}
+
+	//fmt.Println(shuffled)
+	/*
+		reversed := make([]Card, cardCount)
+		for i := 0; i < cardCount; i++ {
+			reversed[cardCount-1-i] = shuffled[i] 
+		}
+		fmt.Println("Top to bottom:", reversed)
+	*/
+
+	return Pile{Cards: shuffled}
 }
 
 // Console Game

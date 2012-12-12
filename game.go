@@ -49,30 +49,26 @@ type Game struct {
 }
 
 func NewGame() (game *Game) {
-	game = new(Game)
+	game = &Game{
+		currentTurn:  "player1",
+		deck:         buildShuffledDeck(),
+		player1Plays: make(map[string]*Pile),
+		player2Plays: make(map[string]*Pile),
+		discards:     make(map[string]*Pile),
+	}
 
-	// Initialize Data structures
-	game.player1Plays = make(map[string]*Pile)
-	game.player2Plays = make(map[string]*Pile)
-	game.discards = make(map[string]*Pile)
+	// Initialize Pointers
 	for _, suit := range Suits {
 		game.player1Plays[suit] = &Pile{}
 		game.player2Plays[suit] = &Pile{}
 		game.discards[suit] = &Pile{}
 	}
 
-	// Get shuffled deck
-	game.deck = buildShuffledDeck()
-
 	// Deal out opening hand
 	for i := 0; i < cardInHandCount; i++ {
 		game.draw("player1", "deck")
 		game.draw("player2", "deck")
 	}
-
-	// Initialize state
-	game.currentTurn = "player1"
-
 	return
 }
 

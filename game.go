@@ -134,6 +134,16 @@ func (game *Game) PlayMove(move *Move) error {
 	return nil
 }
 
+
+func (game *Game) draw(player, pileName string) {
+	pile := game.drawPileFor(pileName)
+	hand := game.handFor(player)
+	card, _ := pile.Pop()
+	//fmt.Println("draw", card, pileName, len(p.Cards))
+	hand.Add(card)
+}
+
+
 // Kinda janky string comparison.
 // Need to rewrite "10" and "s" to next/prev ascii char
 // "s".higherThan("s") => true
@@ -180,17 +190,6 @@ func (game *Game) drawPileFor(name string) *Pile {
 	return game.discards[name]
 }
 
-func (game *Game) draw(player, pileName string) {
-	p := game.drawPileFor(pileName)
-	card, _ := p.Pop()
-	//fmt.Println("draw", card, pileName, len(p.Cards))
-
-	if player == "player1" {
-		game.player1Hand.Add(card)
-	} else {
-		game.player2Hand.Add(card)
-	}
-}
 
 func calculateScore(hand map[string]*Pile) (score int) {
 	for _, pile := range hand {
@@ -198,6 +197,40 @@ func calculateScore(hand map[string]*Pile) (score int) {
 	}
 	return
 }
+
+
+func buildShuffledDeck() Pile {
+	// Build that deck
+	unshuffled := make([]Card, cardCount)
+	for i, suit := range Suits {
+		for j, pip := range Pips {
+			unshuffled[i*len(Pips)+j] = Card{suit, pip}
+		}
+	}
+
+	// Shuffle that deck
+	randIndices := rand.Perm(cardCount)
+	shuffled := make([]Card, cardCount)
+	for i, index := range randIndices {
+		shuffled[i] = unshuffled[index]
+	}
+
+	//fmt.Println(shuffled)
+	/*
+		reversed := make([]Card, cardCount)
+		for i := 0; i < cardCount; i++ {
+			reversed[cardCount-1-i] = shuffled[i] 
+		}
+		fmt.Println("Top to bottom:", reversed)
+	*/
+
+	return Pile{Cards: shuffled}
+}
+
+
+
+// Console Game
+// ============
 
 func main() {
 	rand.Seed(time.Now().UTC().UnixNano())
@@ -233,36 +266,7 @@ func main() {
 	fmt.Println()
 }
 
-func buildShuffledDeck() Pile {
-	// Build that deck
-	unshuffled := make([]Card, cardCount)
-	for i, suit := range Suits {
-		for j, pip := range Pips {
-			unshuffled[i*len(Pips)+j] = Card{suit, pip}
-		}
-	}
 
-	// Shuffle that deck
-	randIndices := rand.Perm(cardCount)
-	shuffled := make([]Card, cardCount)
-	for i, index := range randIndices {
-		shuffled[i] = unshuffled[index]
-	}
-
-	//fmt.Println(shuffled)
-	/*
-		reversed := make([]Card, cardCount)
-		for i := 0; i < cardCount; i++ {
-			reversed[cardCount-1-i] = shuffled[i] 
-		}
-		fmt.Println("Top to bottom:", reversed)
-	*/
-
-	return Pile{Cards: shuffled}
-}
-
-// Console Game
-// ============
 func printScores(game *Game) {
 	fmt.Print("Player1 score: ")
 	printScore(game.player1Plays)

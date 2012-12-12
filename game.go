@@ -9,15 +9,17 @@ import (
 	"time"
 )
 
-var Pips = []string{"s", "s", "s", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"}
-var Suits = []string{"yellow", "white", "blue", "green", "red"}
-
-const cardCount = 13 * 5
-const cardInHandCount = 5
-
 const (
+	cardInHandCount = 5
+	cardCount       = 13 * 5
+
 	PlayAction    = 1
 	DiscardAction = 2
+)
+
+var (
+	Pips  = [...]string{"s", "s", "s", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"}
+	Suits = [...]string{"yellow", "white", "blue", "green", "red"}
 )
 
 type Move struct {
@@ -40,7 +42,6 @@ type Player struct {
 	name string
 	hand []Card
 }
-
 
 // Game -->
 

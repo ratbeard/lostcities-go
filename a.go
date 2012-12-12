@@ -77,29 +77,13 @@ func (pile *Pile) MoveTopCardTo(other *Pile) {
 	card, _ := pile.Pop()
 	other.Add(card)
 }
-// end Pile
-
-type Game struct {
-	// Secret state
-	deck, player1Hand, player2Hand Pile
-
-	// Board, discards are semi-secret depending on your memory
-	discards, player1Plays, player2Plays map[string]Pile
-
-	currentTurn string
-	done        bool
-
-	// Questionable:
-	player1 *Player
-	player2 *Player
-}
 
 func (pile *Pile) Score() (score int) {
 	cards := pile.Cards
 	if len(cards) == 0 {
 		return
 	}
-	
+
 	score = -20
 	multiplier := 1
 	for _, card := range cards {
@@ -114,9 +98,47 @@ func (pile *Pile) Score() (score int) {
 	return
 }
 
+func (pile *Pile) IsHighestCard(card Card) bool {
+	for _, c := range pile.Cards {
+		if c.higherThan(card) {
+			// fmt.Println(card, "Not higher than", c)
+			return false
+		}
+	}
+	return true
+}
+
+// <-- Pile
+
+// Game -->
+
+type Game struct {
+	// Secret state
+	deck, player1Hand, player2Hand Pile
+
+	// Board, discards are semi-secret depending on your memory
+	discards, player1Plays, player2Plays map[string]*Pile
+
+	currentTurn string
+	done        bool
+
+	// Questionable:
+	player1 *Player
+	player2 *Player
+}
 
 func NewGame() (game *Game) {
 	game = new(Game)
+
+	// Initialize Data structures
+	game.player1Plays = make(map[string]*Pile)
+	game.player2Plays = make(map[string]*Pile)
+	game.discards = make(map[string]*Pile)
+	for _, suit := range Suits {
+		game.player1Plays[suit] = &Pile{}
+		game.player2Plays[suit] = &Pile{}
+		game.discards[suit] = &Pile{}
+	}
 
 	// Get shuffled deck
 	game.deck = buildShuffledDeck()
@@ -133,9 +155,7 @@ func NewGame() (game *Game) {
 
 	// Initialize state
 	game.currentTurn = "player1"
-	game.player1Plays = make(map[string]Pile)
-	game.player2Plays = make(map[string]Pile)
-	game.discards = make(map[string]Pile)
+
 	return
 }
 
@@ -184,8 +204,11 @@ func (game *Game) CheckMove(move *Move) error {
 		return errors.New("Invalid action.  Must be play or discard")
 	}
 
-	playPile := game.player1Plays[move.card.suit].Cards
-	if !highestCard(playPile, move.card) {
+	pile := game.player1Plays[move.card.suit]
+	if move.player == "player2" {
+		pile = game.player2Plays[move.card.suit]
+	}
+	if !pile.IsHighestCard(move.card) {
 		return errors.New("A higher card has been played in that pile")
 	}
 
@@ -203,7 +226,7 @@ func (game *Game) PlayMove(move *Move) error {
 
 	// Perform the play/discard
 	card := move.card
-	var p Pile
+	var p *Pile
 	if move.action == DiscardAction {
 		p = game.discards[card.suit]
 	} else if move.player == "player1" {
@@ -211,9 +234,9 @@ func (game *Game) PlayMove(move *Move) error {
 	} else if move.player == "player2" {
 		p = game.player2Plays[card.suit]
 	}
-	fmt.Println("Playing move!", move, p)
+	//fmt.Println("Playing move!", move, p)
 	p.Add(card)
-	fmt.Println("now:", p)
+	//fmt.Println("now:", p)
 
 	// Perform the draw
 	game.draw(move.player, move.drawPile)
@@ -253,16 +276,6 @@ func (card *Card) higherThan(other Card) bool {
 	return a >= b
 }
 
-func highestCard(cards []Card, card Card) bool {
-	for _, c := range cards {
-		if c.higherThan(card) {
-			// fmt.Println(card, "Not higher than", c)
-			return false
-		}
-	}
-	return true
-}
-
 func (game *Game) handFor(name string) *Pile {
 	if name == "player1" {
 		return &game.player1Hand
@@ -276,8 +289,7 @@ func (game *Game) pileFor(name string) *Pile {
 	if name == "deck" {
 		return &game.deck
 	}
-	x := game.discards[name]
-	return &x
+	return game.discards[name]
 }
 
 func (game *Game) draw(player, pileName string) {
@@ -292,43 +304,42 @@ func (game *Game) draw(player, pileName string) {
 	}
 }
 
-
-func calculateScore(hand map[string]Pile) (score int) {
-      for _, pile := range hand {
-				score += pile.Score()
-      }
-      return
+func calculateScore(hand map[string]*Pile) (score int) {
+	for _, pile := range hand {
+		score += pile.Score()
+	}
+	return
 }
 
 func main() {
 	rand.Seed(time.Now().UTC().UnixNano())
-	
-	/*
-	game := new(Game)
-	game.player1Plays = map[string][]Card{
-		"yellow": []Card{{"yellow", "s"}, {"yellow", "s"}, {"yellow", "s"}, {"yellow", "1"}, {"yellow", "2"}, {"yellow", "3"}, {"yellow", "4"}, {"yellow", "5"}, {"yellow", "6"}, {"yellow", "7"}, {"yellow", "8"}, {"yellow", "9"}, {"yellow", "10"}},
-		"white":  []Card{{"white", "s"}, {"white", "s"}, {"white", "10"}},
-		"blue":   []Card{{"blue", "3"}, {"blue", "4"}},
-		"green":  []Card{},
-		"red":    []Card{{"red", "8"}, {"red", "9"}},
-	}
-	game.discards = map[string][]Card{
-		"yellow": []Card{},
-		"white":  []Card{{"white", "1"}},
-		"blue":   []Card{{"blue", "s"}},
-		"green":  []Card{{"green", "s"}, {"green", "1"}, {"green", "2"}},
-		"red":    []Card{{"red", "10"}},
-	}
-	game.player2Plays = map[string][]Card{
-		"yellow": []Card{},
-		"white":  []Card{{"white", "4"}, {"white", "6"}},
-		"blue":   []Card{{"blue", "s"}, {"blue", "1"}, {"blue", "2"}, {"blue", "8"}, {"blue", "10"}},
-		"green":  []Card{{"green", "5"}, {"green", "6"}, {"green", "7"}, {"green", "10"}},
-		"red":    []Card{{"red", "s"}, {"red", "3"}, {"red", "7"}},
-	}
 
-	printScreen(game)
-	printScores(game)
+	/*
+		game := new(Game)
+		game.player1Plays = map[string][]Card{
+			"yellow": []Card{{"yellow", "s"}, {"yellow", "s"}, {"yellow", "s"}, {"yellow", "1"}, {"yellow", "2"}, {"yellow", "3"}, {"yellow", "4"}, {"yellow", "5"}, {"yellow", "6"}, {"yellow", "7"}, {"yellow", "8"}, {"yellow", "9"}, {"yellow", "10"}},
+			"white":  []Card{{"white", "s"}, {"white", "s"}, {"white", "10"}},
+			"blue":   []Card{{"blue", "3"}, {"blue", "4"}},
+			"green":  []Card{},
+			"red":    []Card{{"red", "8"}, {"red", "9"}},
+		}
+		game.discards = map[string][]Card{
+			"yellow": []Card{},
+			"white":  []Card{{"white", "1"}},
+			"blue":   []Card{{"blue", "s"}},
+			"green":  []Card{{"green", "s"}, {"green", "1"}, {"green", "2"}},
+			"red":    []Card{{"red", "10"}},
+		}
+		game.player2Plays = map[string][]Card{
+			"yellow": []Card{},
+			"white":  []Card{{"white", "4"}, {"white", "6"}},
+			"blue":   []Card{{"blue", "s"}, {"blue", "1"}, {"blue", "2"}, {"blue", "8"}, {"blue", "10"}},
+			"green":  []Card{{"green", "5"}, {"green", "6"}, {"green", "7"}, {"green", "10"}},
+			"red":    []Card{{"red", "s"}, {"red", "3"}, {"red", "7"}},
+		}
+
+		printScreen(game)
+		printScores(game)
 	*/
 	// fmt.Scan(&i)
 	fmt.Println()
@@ -346,7 +357,7 @@ func printScores(game *Game) {
 	fmt.Println()
 }
 
-func printScore(plays map[string]Pile) {
+func printScore(plays map[string]*Pile) {
 	var score int
 	score = calculateScore(plays)
 	fmt.Print(justifyRight(strconv.Itoa(score), 4), "  =  ")
@@ -377,7 +388,7 @@ func printScreen(game *Game) {
 
 func printR(game *Game, color string) {
 	width := 26
-	cards := FormatCards(game.player1Plays[color])
+	cards := FormatCards(*game.player1Plays[color])
 	justified := justifyRight(cards, width)
 	colored := colorStr(justified, shellColors[color])
 	fmt.Print(colored)
@@ -385,12 +396,12 @@ func printR(game *Game, color string) {
 	discards := game.discards[color].Cards
 	topDiscard := "   "
 	if len(discards) > 0 {
-		topDiscard = discards[len(discards) - 1].pip
+		topDiscard = discards[len(discards)-1].pip
 		topDiscard = colorStr(justifyRight(topDiscard, 3), shellColors[color])
 	}
 	fmt.Print("  |", topDiscard, " |  ")
 
-	fmt.Print(colorStr(FormatCards(game.player2Plays[color]), shellColors[color]))
+	fmt.Print(colorStr(FormatCards(*game.player2Plays[color]), shellColors[color]))
 	fmt.Println()
 }
 

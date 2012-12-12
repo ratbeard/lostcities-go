@@ -106,7 +106,8 @@ func TestHighestCard(t *testing.T) {
 
 	cards = []Card{{"green", "s"}, {"green", "8"}}
 	card = Card{"green", "10"}
-	if !highestCard(cards, card) {
+	p := Pile{Cards: cards}
+	if !p.IsHighestCard(card) {
 		t.Error("10 is higher than 8")
 	}
 }
@@ -138,14 +139,14 @@ func TestValidMove(t *testing.T) {
 	assertInvalidMove(t, game, &Move{"player1", game.player1Hand.Cards[0], PlayAction, "yellow"})
 
 	// Drawing from a non-empty discard pile is legit
-	var p Pile
+	var p *Pile
 	p = game.discards["yellow"]
 	p.Add(Card{"yellow", "1"})
 	assertValidMove(t, game, &Move{"player1", game.player1Hand.Cards[0], PlayAction, "yellow"})
 	_, _ = p.Pop()
 
 	// Playing a card thats lower than a card you've already played is not legit
-	p = game.discards["yellow"]
+	p = game.player1Plays["green"]
 	p.Add(Card{"green", "8"})
 	assertInvalidMove(t, game, &Move{"player1", Card{"green", "7"}, PlayAction, "deck"})
 	_, _ = p.Pop()
@@ -189,11 +190,9 @@ func TestPlayingValidMove(t *testing.T) {
 	var card Card
 	var move *Move
 
-
 	// Turn 1 - Player1 plays {green 7}
 	card = Card{"green", "7"}
 	move = &Move{"player1", card, PlayAction, "deck"}
-	fmt.Println("About to play", move)
 	err := game.PlayMove(move)
 	if err != nil {
 		t.Fatal("Playing a valid move should not return an error", err)
@@ -291,12 +290,13 @@ func TestTurnsAndGameEnd(t *testing.T) {
 // Helpers
 func assertValidMove(t *testing.T, game *Game, move *Move) {
 	if err := game.CheckMove(move); err != nil {
-		t.Error("Should be a valid move:", move, "got:", err)
+		t.Fatal("Should be a valid move:", move, "got:", err)
 	}
 }
 
 func assertInvalidMove(t *testing.T, game *Game, move *Move) {
 	if err := game.CheckMove(move); err == nil {
-		t.Error("Should be an invalid move:", move)
+		t.Fatal("Should be an invalid move:", move)
+		// panic('x')
 	}
 }

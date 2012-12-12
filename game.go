@@ -35,7 +35,6 @@ type Card struct {
 
 type Deck struct {
 	cards []Card
-	x     int
 }
 
 type Player struct {

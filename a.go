@@ -60,34 +60,26 @@ func (pile *Pile) Pop() (card Card, ok bool) {
 	if size == 0 {
 		return Card{}, false
 	}
-	
+
 	card, pile.Cards = pile.Cards[size-1], pile.Cards[:size-1]
 	return card, true
 }
 
-func (pile *Pile) Add(card Card) () {
+func (pile *Pile) Add(card Card) {
 	pile.Cards = append(pile.Cards, card)
 }
 
 func (pile *Pile) Remove(card Card) {
-	
+
 }
 
-func (pile *Pile) MoveTopCard(other *Pile) {
+func (pile *Pile) MoveTopCardTo(other *Pile) {
 	card, _ := pile.Pop()
 	other.Add(card)
 }
 
-
-
-
 type Game struct {
-	deck Pile
-	
-	// Secret state:
-	// deck        []Card
-	player1Hand []Card
-	player2Hand []Card
+	deck, player1Hand, player2Hand Pile
 
 	// Board (discards are semi-hidden):
 	player1Plays map[string][]Card
@@ -151,7 +143,7 @@ func buildShuffledDeck() Pile {
 		fmt.Println("Top to bottom:", reversed)
 	*/
 
-	return Pile{ Cards: shuffled }
+	return Pile{Cards: shuffled}
 }
 
 func (game *Game) CheckMove(move *Move) error {
@@ -163,7 +155,7 @@ func (game *Game) CheckMove(move *Move) error {
 		return errors.New("Wrong turn")
 	}
 
-	if !hasCard(game.handFor(move.player), move.card) {
+	if !game.handFor(move.player).Has(move.card) {
 		return errors.New("Card not in hand")
 	}
 
@@ -218,12 +210,6 @@ func (game *Game) PlayMove(move *Move) error {
 	return nil
 }
 
-/*
-func moveCard(card Card, from, to []Card) ([]Card, []Card){
-	return from, to
-}
-*/
-
 func hasCard(cards []Card, card Card) bool {
 	for _, c := range cards {
 		if c == card {
@@ -263,11 +249,11 @@ func highestCard(cards []Card, card Card) bool {
 	return true
 }
 
-func (game *Game) handFor(name string) []Card {
+func (game *Game) handFor(name string) *Pile {
 	if name == "player1" {
-		return game.player1Hand
+		return &game.player1Hand
 	} else if name == "player2" {
-		return game.player2Hand
+		return &game.player2Hand
 	}
 	return nil
 }
@@ -281,7 +267,7 @@ func (game *Game) pileFor(name string) []Card {
 
 func (game *Game) draw(player, pileName string) {
 	var card Card
-	
+
 	if pileName == "deck" {
 		card, _ = game.deck.Pop()
 	} else {
@@ -291,9 +277,9 @@ func (game *Game) draw(player, pileName string) {
 	}
 
 	if player == "player1" {
-		game.player1Hand = append(game.player1Hand, card)
+		game.player1Hand.Add(card)
 	} else {
-		game.player2Hand = append(game.player2Hand, card)
+		game.player2Hand.Add(card)
 	}
 }
 

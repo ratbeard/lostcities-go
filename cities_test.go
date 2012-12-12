@@ -183,42 +183,68 @@ func TestPlayingValidMove(t *testing.T) {
 	card := game.player1Hand[0]
 	move := &Move{"player1", card, PlayAction, "deck"}
 
-	// Turn 1 - play a card
+	// Turn 1 - Player1 plays {green 7}
 	err := game.PlayMove(move)
 	if err != nil {
 		t.Error("Playing a valid move should not return an error", err)
 	}
-
-	// Play puts card in play pile
 	if len(game.player1Plays[card.suit]) != 1 {
 		t.Error("Playing a card should put it in the play pile")
 	}
 	if game.player1Plays[card.suit][0] != card {
 		t.Error("Playing a card should put it in the play pile")
 	}
-	if game.currentTurn != "player2" {
-		t.Error("Playing a valid move should advance game turn")
-	}
 
-	// Turn 2 - discard a card
+	// Turn 2 - Player2 discards {yellow 7}
 	card = game.player2Hand[0]
 	move = &Move{"player2", card, DiscardAction, "deck"}
 	err = game.PlayMove(move)
 	if err != nil {
 		t.Error("Playing a valid move should not return an error", err)
 	}
-
 	if len(game.discards[card.suit]) != 1 {
-		t.Error("Discarding a card should put it in the discard pile")
+		t.Fatal("Discarding a card should put it in the discard pile")
 	}
 	if game.discards[card.suit][0] != card {
 		t.Error("Discarding a card should put it in the discard pile")
 	}
-	if game.currentTurn != "player1" {
-		t.Error("Playing a valid move should advance game turn")
+	
+	// Turn 3 - Player1 discards {yellow 10}
+	card = Card{"yellow", "10"}
+	move = &Move{"player1", card, DiscardAction, "deck"}
+	err = game.PlayMove(move)
+	if err != nil {
+		t.Error("Playing a valid move should not return an error", err)
+	}
+	if len(game.discards[card.suit]) != 2 {
+		t.Fatal("Discarding a card should put it in the discard pile")
+	}
+	if game.discards[card.suit][1] != card {
+		t.Error("Discarding a card should put it in the discard pile")
+	}
+
+	// Turn 4 - Player2 plays {blue 1}, draws from yellow discard
+	card = Card{"blue", "1"}
+	move = &Move{"player2", card, PlayAction, "yellow"}
+	err = game.PlayMove(move)
+	if err != nil {
+		t.Error("Playing a valid move should not return an error", err)
+	}
+	if len(game.player2Plays[card.suit]) != 1 {
+		t.Fatal("Playing a card should put it in the play pile")
+	}
+	if game.player2Plays[card.suit][0] != card {
+		t.Error("Playing a card should put it in the play pile")
+	}
+	if len(game.discards[move.drawPile]) != 1 {
+		t.Fatal("Drawing from discard pile removes the top card from the pile")
+	}
+	if game.discards[move.drawPile][0] != card {
+		t.Fatal("Drawing from discard pile removes the top card from the pile")
 	}
 
 }
+
 
 func TestTurnsAndGameEnd(t *testing.T) {
 	rand.Seed(0)

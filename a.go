@@ -251,6 +251,7 @@ func (game *Game) drawFromDeck(player string) bool {
 	return true
 }
 
+
 // helper
 func pop(cards []Card) (Card, []Card, bool) {
 	size := len(cards)

@@ -208,7 +208,7 @@ func TestPlayingValidMove(t *testing.T) {
 	if game.discards[card.suit][0] != card {
 		t.Error("Discarding a card should put it in the discard pile")
 	}
-	
+
 	// Turn 3 - Player1 discards {yellow 10}
 	card = Card{"yellow", "10"}
 	move = &Move{"player1", card, DiscardAction, "deck"}
@@ -239,12 +239,11 @@ func TestPlayingValidMove(t *testing.T) {
 	if len(game.discards[move.drawPile]) != 1 {
 		t.Fatal("Drawing from discard pile removes the top card from the pile")
 	}
-	if game.discards[move.drawPile][0] != card {
+	if game.discards[move.drawPile][0] == card {
 		t.Fatal("Drawing from discard pile removes the top card from the pile")
 	}
 
 }
-
 
 func TestTurnsAndGameEnd(t *testing.T) {
 	rand.Seed(0)

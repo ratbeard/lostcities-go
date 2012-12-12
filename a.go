@@ -71,8 +71,8 @@ func NewGame() (game *Game) {
 
 	// Deal out opening hand
 	for i := 0; i < cardsInHandCount; i++ {
-		_ = game.drawFromDeck("player1")
-		_ = game.drawFromDeck("player2")
+		game.draw("player1", "deck")
+		game.draw("player2", "deck")
 	}
 
 	// Initialize state
@@ -124,7 +124,7 @@ func (game *Game) CheckMove(move *Move) error {
 		return errors.New("Wrong turn")
 	}
 
-	if !hasCard(game.hand(move.player), move.card) {
+	if !hasCard(game.handFor(move.player), move.card) {
 		return errors.New("Card not in hand")
 	}
 
@@ -137,7 +137,7 @@ func (game *Game) CheckMove(move *Move) error {
 		return errors.New("A higher card has been played in that pile")
 	}
 
-	if pile := game.pile(move.drawPile); len(pile) == 0 {
+	if pile := game.pileFor(move.drawPile); len(pile) == 0 {
 		return errors.New("Cannot draw from empty pile")
 	}
 
@@ -162,7 +162,7 @@ func (game *Game) PlayMove(move *Move) error {
 	}
 
 	// Perform the draw
-	game.drawFromDeck(move.player)
+	game.draw(move.player, move.drawPile)
 
 	// Switch turns
 	if game.currentTurn == "player1" {
@@ -171,13 +171,19 @@ func (game *Game) PlayMove(move *Move) error {
 		game.currentTurn = "player1"
 	}
 
-	// Check if done
+	// Check if game over
 	if len(game.deck) == 0 {
 		game.done = true
 	}
 
 	return nil
 }
+
+/*
+func moveCard(card Card, from, to []Card) ([]Card, []Card){
+	return from, to
+}
+*/
 
 func hasCard(cards []Card, card Card) bool {
 	for _, c := range cards {
@@ -218,7 +224,7 @@ func highestCard(cards []Card, card Card) bool {
 	return true
 }
 
-func (game *Game) hand(name string) []Card {
+func (game *Game) handFor(name string) []Card {
 	if name == "player1" {
 		return game.player1Hand
 	} else if name == "player2" {
@@ -227,30 +233,29 @@ func (game *Game) hand(name string) []Card {
 	return nil
 }
 
-func (game *Game) pile(name string) []Card {
+func (game *Game) pileFor(name string) []Card {
 	if name == "deck" {
 		return game.deck
 	}
 	return game.discards[name]
 }
 
-func (game *Game) drawFromDeck(player string) bool {
-	card, deck, ok := pop(game.deck)
-	if !ok {
-		return ok
-	}
+func (game *Game) draw(player, pileName string) {
+	pile := game.pileFor(pileName)
+	card, pile, _ := pop(pile)
 
-	// fmt.Println("drawFromDeck:", player, card)
-	game.deck = deck
+	if pileName == "deck" {
+		game.deck = pile
+	} else {
+		game.discards[pileName] = pile
+	}
 
 	if player == "player1" {
 		game.player1Hand = append(game.player1Hand, card)
 	} else {
 		game.player2Hand = append(game.player2Hand, card)
 	}
-	return true
 }
-
 
 // helper
 func pop(cards []Card) (Card, []Card, bool) {

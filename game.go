@@ -38,11 +38,14 @@ type Game struct {
 	// Secret state
 	deck, player1Hand, player2Hand Pile
 
-	// Board, discards are semi-secret depending on your memory
+	// Board state.  Discards are semi-secret depending on your memory
 	discards, player1Plays, player2Plays map[string]*Pile
 
+	// Who's turn is it
 	currentTurn string
-	done        bool
+
+	// Is the game over
+	done bool
 }
 
 func NewGame() (game *Game) {

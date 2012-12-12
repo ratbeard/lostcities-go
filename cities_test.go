@@ -27,8 +27,8 @@ func TestNewGame(t *testing.T) {
 		t.Error("Wrong number of starting cards for player2", len(g.player2Hand))
 	}
 
-	if len(g.deck) != (55) {
-		t.Error("Wrong number of cards left in deck", len(g.deck))
+	if len(g.deck.Cards) != (55) {
+		t.Error("Wrong number of cards left in deck", len(g.deck.Cards))
 	}
 
 	if g.currentTurn != "player1" {
@@ -37,7 +37,7 @@ func TestNewGame(t *testing.T) {
 
 	//fmt.Printf("%#v", g.player1Hand)
 	//fmt.Println(g.player2Hand)
-	//fmt.Println(g.deck)
+	//fmt.Println(g.deck.Cards)
 }
 
 func TestExpectedDeckOrder(t *testing.T) {
@@ -56,7 +56,7 @@ func TestExpectedDeckOrder(t *testing.T) {
 	}
 
 	card = Card{"yellow", "s"}
-	if game.deck[6] != card {
+	if game.deck.Cards[6] != card {
 		t.Error("deck unexpected card")
 	}
 }
@@ -129,7 +129,7 @@ func TestValidMove(t *testing.T) {
 
 	// Playing card not in hand is not legit
 	assertInvalidMove(t, game, &Move{"player1", game.player2Hand[0], PlayAction, "deck"})
-	assertInvalidMove(t, game, &Move{"player1", game.deck[0], PlayAction, "deck"})
+	assertInvalidMove(t, game, &Move{"player1", game.deck.Cards[0], PlayAction, "deck"})
 
 	// Trying something other than Play or Discard is not legit
 	assertInvalidMove(t, game, &Move{"player1", game.player1Hand[0], 3, "deck"})
@@ -273,8 +273,8 @@ func TestTurnsAndGameEnd(t *testing.T) {
 	}
 
 	// Check end game state
-	if len(game.deck) > 0 {
-		t.Errorf("Deck should be empty, %d cards left", len(game.deck))
+	if len(game.deck.Cards) > 0 {
+		t.Errorf("Deck should be empty, %d cards left", len(game.deck.Cards))
 	}
 	if !game.done {
 		t.Error("Game should be done")

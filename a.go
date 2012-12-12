@@ -12,7 +12,8 @@ import (
 var Pips = []string{"s", "s", "s", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"}
 var Suits = []string{"yellow", "white", "blue", "green", "red"}
 
-const cardsInHandCount = 5
+const cardCount = 13 * 5
+const cardInHandCount = 5
 
 const (
 	PlayAction    = 1
@@ -40,9 +41,51 @@ type Player struct {
 	hand []Card
 }
 
+type Pile struct {
+	Cards []Card
+	//Sort bool
+}
+
+func (pile *Pile) Has(card Card) (found bool) {
+	for _, c := range pile.Cards {
+		if c == card {
+			return true
+		}
+	}
+	return
+}
+
+func (pile *Pile) Pop() (card Card, ok bool) {
+	size := len(pile.Cards)
+	if size == 0 {
+		return Card{}, false
+	}
+	
+	card, pile.Cards = pile.Cards[size-1], pile.Cards[:size-1]
+	return card, true
+}
+
+func (pile *Pile) Add(card Card) () {
+	pile.Cards = append(pile.Cards, card)
+}
+
+func (pile *Pile) Remove(card Card) {
+	
+}
+
+func (pile *Pile) MoveTopCard(other *Pile) {
+	card, _ := pile.Pop()
+	other.Add(card)
+}
+
+
+
+
 type Game struct {
+	deck Pile
+	
 	// Secret state:
-	deck        []Card
+	// deck        []Card
 	player1Hand []Card
 	player2Hand []Card
 
@@ -70,7 +113,7 @@ func NewGame() (game *Game) {
 	game.player2 = new(Player)
 
 	// Deal out opening hand
-	for i := 0; i < cardsInHandCount; i++ {
+	for i := 0; i < cardInHandCount; i++ {
 		game.draw("player1", "deck")
 		game.draw("player2", "deck")
 	}
@@ -83,15 +126,12 @@ func NewGame() (game *Game) {
 	return
 }
 
-func buildShuffledDeck() []Card {
-	cardCount := len(Pips) * len(Suits)
-	unshuffled := make([]Card, cardCount)
-
+func buildShuffledDeck() Pile {
 	// Build that deck
+	unshuffled := make([]Card, cardCount)
 	for i, suit := range Suits {
 		for j, pip := range Pips {
 			unshuffled[i*len(Pips)+j] = Card{suit, pip}
-			// fmt.Println(i*len(Pips)+j, Card{suit, pip})
 		}
 	}
 
@@ -103,7 +143,6 @@ func buildShuffledDeck() []Card {
 	}
 
 	//fmt.Println(shuffled)
-
 	/*
 		reversed := make([]Card, cardCount)
 		for i := 0; i < cardCount; i++ {
@@ -112,7 +151,7 @@ func buildShuffledDeck() []Card {
 		fmt.Println("Top to bottom:", reversed)
 	*/
 
-	return shuffled
+	return Pile{ Cards: shuffled }
 }
 
 func (game *Game) CheckMove(move *Move) error {
@@ -172,7 +211,7 @@ func (game *Game) PlayMove(move *Move) error {
 	}
 
 	// Check if game over
-	if len(game.deck) == 0 {
+	if len(game.deck.Cards) == 0 {
 		game.done = true
 	}
 
@@ -235,18 +274,19 @@ func (game *Game) handFor(name string) []Card {
 
 func (game *Game) pileFor(name string) []Card {
 	if name == "deck" {
-		return game.deck
+		return game.deck.Cards
 	}
 	return game.discards[name]
 }
 
 func (game *Game) draw(player, pileName string) {
-	pile := game.pileFor(pileName)
-	card, pile, _ := pop(pile)
-
+	var card Card
+	
 	if pileName == "deck" {
-		game.deck = pile
+		card, _ = game.deck.Pop()
 	} else {
+		pile := game.pileFor(pileName)
+		card, pile, _ = pop(pile)
 		game.discards[pileName] = pile
 	}
 

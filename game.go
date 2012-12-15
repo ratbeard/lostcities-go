@@ -30,7 +30,7 @@ type Move struct {
 	player   string
 	card     Card
 	action   int    // Play || Discard
-	drawPile string // "yellow", etc, "deck"
+	drawPile string // "deck", "yellow", "green", "etc"
 }
 
 // Game -->
@@ -280,8 +280,6 @@ func printScore(plays map[string]*Pile) {
 		fmt.Print(colorStr(justifyRight(strconv.Itoa(score), 4), shellColors[color]), " ")
 	}
 }
-
-
 
 //
 // Coloring / Formatting

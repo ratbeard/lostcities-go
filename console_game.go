@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"time"
 	"math/rand"
+	"time"
 )
 
 type ConsoleGame struct {
@@ -13,24 +13,21 @@ type ConsoleGame struct {
 
 func NewConsoleGame() *ConsoleGame {
 	rand.Seed(time.Now().UTC().UnixNano())
-	g := &ConsoleGame{
-		game: NewGame(),
-	}
-	return g
+	return &ConsoleGame{game: NewGame()}
 }
 
 func (cg *ConsoleGame) Start() {
-	for !cg.game.done {
-		cg.printState()
-		cg.getInput()
+	cg.currentMove.player = cg.game.currentTurn
+	for {
+		cg.update()
 	}
 }
 
-func (cg *ConsoleGame) printState() {
+func (cg *ConsoleGame) update() {
 	// Clear the screen
 	fmt.Print("\033[2J\033[H")
 
-	// Print player heading, and active
+	// Print player heading, including active player
 	player1 := "Player 1"
 	player2 := "Player 2"
 	if cg.game.currentTurn == "player1" {
@@ -48,23 +45,63 @@ func (cg *ConsoleGame) printState() {
 
 	// Print hand
 	fmt.Print("Your hand: ")
-	for _, card := range cg.game.handFor(cg.game.currentTurn).Cards {
+	hand := cg.game.handFor(cg.game.currentTurn)
+	for _, card := range hand.Cards {
 		fmt.Print(" ", colorCard(card))
 	}
 	fmt.Println()
-	
+
+	if cg.game.done {
+		fmt.Println("Game Over!")
+		return
+	}
+
 	// Print Prompts
-	if true {
+	var s string
+	var x int
+	switch {
+	case cg.currentMove.card.pip == "":
 		fmt.Print("Pick a card to play/discard (1-5):  ")
-	}
-	if !true {
+		fmt.Scan(&x)
+		cg.currentMove.card = hand.Cards[x-1]
+	case cg.currentMove.action == 0:
 		fmt.Print("Play or discard (p,d):  ")
+		fmt.Scan(&s)
+		if s == "p" {
+			cg.currentMove.action = PlayAction
+		} else if s == "d" {
+			cg.currentMove.action = DiscardAction
+		}
+	case cg.currentMove.drawPile == "":
+		var pile string
+		fmt.Print("Pick a card to draw (d y b w g r):  \n")
+		fmt.Scan(&s)
+		switch s {
+		case "d":
+			pile = "deck"
+		case "y":
+			pile = "yellow"
+		case "b":
+			pile = "blue"
+		case "w":
+			pile = "white"
+		case "g":
+			pile = "green"
+		case "r":
+			pile = "red"
+		default:
+			_ = "error"
+		}
+		cg.currentMove.drawPile = pile
+	default:
+		// Try to play the move
+		if err := cg.game.PlayMove(&cg.currentMove); err != nil {
+			fmt.Printf("\nError!: %s.  (Press enter)\n\n", err)
+			fmt.Scanf("%s", &s)
+		}
+		// Reset current move
+		cg.currentMove = Move{player: cg.game.currentTurn}
 	}
-	if !true {
-		fmt.Print("Pick a card to draw (y b w g r):  \n")
-	}
-	
-	fmt.Println()
 }
 
 func (cg *ConsoleGame) printRow(color string) {
@@ -84,12 +121,6 @@ func (cg *ConsoleGame) printRow(color string) {
 
 	fmt.Print(colorStr(FormatCards(*cg.game.player2Plays[color]), shellColors[color]))
 	fmt.Println()
-}
-
-func (cg *ConsoleGame) getInput() {
-	var c string
-	fmt.Scan(&c)
-
 }
 
 func colorCard(card Card) string {

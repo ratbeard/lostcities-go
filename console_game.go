@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"math/rand"
 	"time"
+	"strconv"
+	"strings"
 )
 
 type ConsoleGame struct {
@@ -129,4 +131,78 @@ func colorCard(card Card) string {
 
 func underline(str string) string {
 	return "<" + str + ">"
+}
+
+
+
+
+
+func printScores(game *Game) {
+	fmt.Print("Player1 score: ")
+	printScore(game.player1Plays)
+	fmt.Println()
+
+	fmt.Print("Player2 score: ")
+	printScore(game.player2Plays)
+	fmt.Println()
+}
+
+func printScore(plays map[string]*Pile) {
+	var score int
+	score = calculateScore(plays)
+	fmt.Print(justifyRight(strconv.Itoa(score), 4), "  =  ")
+
+	for _, color := range Suits {
+		p := plays[color]
+		score = p.Score()
+		fmt.Print(colorStr(justifyRight(strconv.Itoa(score), 4), shellColors[color]), " ")
+	}
+}
+
+//
+// Coloring / Formatting
+// ======
+const (
+	Reset  = ""
+	Yellow = "1;33"
+	Blue   = "1;34"
+	White  = "1;37"
+	Green  = "32"
+	Red    = "31"
+)
+
+var shellColors = map[string]string{
+	"yellow": "1;33",
+	"blue":   "1;34",
+	"white":  "1;37",
+	"green":  "32",
+	"red":    "31",
+}
+
+/*
+
+func (c Card) String() string {
+	//return c.pip
+	return colorStr(c.pip, shellColors[c.suit])
+}
+*/
+
+func FormatCards(p Pile) string {
+	c := p.Cards
+	s := fmt.Sprint(c)
+	return s[1 : len(s)-1]
+}
+
+func justifyRight(s string, width int) string {
+	return s
+	return strings.Repeat(" ", width-len(s)) + s
+}
+
+func colorEscape(str string) string {
+	return "\033[" + str + "m"
+}
+
+func colorStr(str string, color string) string {
+	cc := shellColors[color]
+	return colorEscape(cc) + str + colorEscape(Reset)
 }

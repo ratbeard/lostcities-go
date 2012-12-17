@@ -2,10 +2,7 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"math/rand"
-	"strconv"
-	"strings"
 	"time"
 )
 
@@ -49,6 +46,9 @@ type Game struct {
 }
 
 func NewGame() (game *Game) {
+	// Randomize
+	rand.Seed(time.Now().UTC().UnixNano())
+		
 	game = &Game{
 		currentTurn:  "player1",
 		deck:         buildShuffledDeck(),
@@ -220,111 +220,4 @@ func buildShuffledDeck() Pile {
 	*/
 
 	return Pile{Cards: shuffled}
-}
-
-// Console Game
-// ============
-
-func zmain() {
-	rand.Seed(time.Now().UTC().UnixNano())
-
-	/*
-		game := new(Game)
-		game.player1Plays = map[string][]Card{
-			"yellow": []Card{{"yellow", "s"}, {"yellow", "s"}, {"yellow", "s"}, {"yellow", "1"}, {"yellow", "2"}, {"yellow", "3"}, {"yellow", "4"}, {"yellow", "5"}, {"yellow", "6"}, {"yellow", "7"}, {"yellow", "8"}, {"yellow", "9"}, {"yellow", "10"}},
-			"white":  []Card{{"white", "s"}, {"white", "s"}, {"white", "10"}},
-			"blue":   []Card{{"blue", "3"}, {"blue", "4"}},
-			"green":  []Card{},
-			"red":    []Card{{"red", "8"}, {"red", "9"}},
-		}
-		game.discards = map[string][]Card{
-			"yellow": []Card{},
-			"white":  []Card{{"white", "1"}},
-			"blue":   []Card{{"blue", "s"}},
-			"green":  []Card{{"green", "s"}, {"green", "1"}, {"green", "2"}},
-			"red":    []Card{{"red", "10"}},
-		}
-		game.player2Plays = map[string][]Card{
-			"yellow": []Card{},
-			"white":  []Card{{"white", "4"}, {"white", "6"}},
-			"blue":   []Card{{"blue", "s"}, {"blue", "1"}, {"blue", "2"}, {"blue", "8"}, {"blue", "10"}},
-			"green":  []Card{{"green", "5"}, {"green", "6"}, {"green", "7"}, {"green", "10"}},
-			"red":    []Card{{"red", "s"}, {"red", "3"}, {"red", "7"}},
-		}
-
-		printScreen(game)
-		printScores(game)
-	*/
-	// fmt.Scan(&i)
-	fmt.Println()
-}
-
-func printScores(game *Game) {
-	fmt.Print("Player1 score: ")
-	printScore(game.player1Plays)
-	fmt.Println()
-
-	fmt.Print("Player2 score: ")
-	printScore(game.player2Plays)
-	fmt.Println()
-}
-
-func printScore(plays map[string]*Pile) {
-	var score int
-	score = calculateScore(plays)
-	fmt.Print(justifyRight(strconv.Itoa(score), 4), "  =  ")
-
-	for _, color := range Suits {
-		p := plays[color]
-		score = p.Score()
-		fmt.Print(colorStr(justifyRight(strconv.Itoa(score), 4), shellColors[color]), " ")
-	}
-}
-
-//
-// Coloring / Formatting
-// ======
-const (
-	Reset  = ""
-	Yellow = "1;33"
-	Blue   = "1;34"
-	White  = "1;37"
-	Green  = "32"
-	Red    = "31"
-)
-
-var shellColors = map[string]string{
-	"yellow": "1;33",
-	"blue":   "1;34",
-	"white":  "1;37",
-	"green":  "32",
-	"red":    "31",
-}
-
-/*
-
-func (c Card) String() string {
-	//return c.pip
-	return colorStr(c.pip, shellColors[c.suit])
-}
-*/
-
-func FormatCards(p Pile) string {
-	c := p.Cards
-	s := fmt.Sprint(c)
-	return s[1 : len(s)-1]
-}
-
-func justifyRight(s string, width int) string {
-	return s
-	return strings.Repeat(" ", width-len(s)) + s
-}
-
-func colorEscape(str string) string {
-	return "\033[" + str + "m"
-}
-
-func colorStr(str string, color string) string {
-	cc := shellColors[color]
-	return colorEscape(cc) + str + colorEscape(Reset)
 }

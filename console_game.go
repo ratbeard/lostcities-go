@@ -124,13 +124,7 @@ func (cg *ConsoleGame) printRow(color string) {
 	fmt.Println()
 }
 
-func colorCard(card Card) string {
-	return colorStr(card.pip, card.suit)
-}
 
-func underline(str string) string {
-	return "<" + str + ">"
-}
 
 
 
@@ -158,33 +152,7 @@ func printScore(plays map[string]*Pile) {
 	}
 }
 
-//
-// Coloring / Formatting
-// ======
-const (
-	Reset  = ""
-	Yellow = "1;33"
-	Blue   = "1;34"
-	White  = "1;37"
-	Green  = "32"
-	Red    = "31"
-)
 
-var shellColors = map[string]string{
-	"yellow": "1;33",
-	"blue":   "1;34",
-	"white":  "1;37",
-	"green":  "32",
-	"red":    "31",
-}
-
-/*
-
-func (c Card) String() string {
-	//return c.pip
-	return colorStr(c.pip, shellColors[c.suit])
-}
-*/
 
 func FormatCards(p Pile) string {
 	c := p.Cards
@@ -197,11 +165,30 @@ func justifyRight(s string, width int) string {
 	return strings.Repeat(" ", width-len(s)) + s
 }
 
-func colorEscape(str string) string {
-	return "\033[" + str + "m"
+
+
+// Shell Colors
+// ====
+var shellColors = map[string]string{
+	"yellow": "1;33",
+	"blue":   "1;34",
+	"white":  "1;37",
+	"green":  "32",
+	"red":    "31",
 }
 
-func colorStr(str string, color string) string {
-	cc := shellColors[color]
-	return colorEscape(cc) + str + colorEscape(Reset)
+func underline(str string) string {
+	return "<" + str + ">"
+}
+
+func colorCard(card Card) string {
+	return colorStr(card.pip, card.suit)
+}
+
+func colorStr(str, color string) string {
+	return colorEscape(shellColors[color]) + str + colorEscape("")
+}
+
+func colorEscape(str string) string {
+	return "\033[" + str + "m"
 }

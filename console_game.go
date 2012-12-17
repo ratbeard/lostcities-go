@@ -16,7 +16,6 @@ func NewConsoleGame() *ConsoleGame {
 }
 
 func (cg *ConsoleGame) Start() {
-	cg.currentMove.player = cg.game.currentTurn
 	for {
 		cg.update()
 	}
@@ -54,6 +53,9 @@ func (cg *ConsoleGame) update() {
 		fmt.Println("Game Over!")
 		return
 	}
+	
+	// Update current move's player
+	cg.currentMove.player = cg.game.currentTurn
 
 	// Print Prompts
 	var s string
@@ -99,7 +101,7 @@ func (cg *ConsoleGame) update() {
 			fmt.Scanf("%s", &s)
 		}
 		// Reset current move
-		cg.currentMove = Move{player: cg.game.currentTurn}
+		cg.currentMove = Move{}
 	}
 }
 

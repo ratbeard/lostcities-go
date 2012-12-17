@@ -106,29 +106,47 @@ func (cg *ConsoleGame) update() {
 }
 
 func (cg *ConsoleGame) printRow(color string) {
-	width := 26
-	cards := FormatCards(*cg.game.player1Plays[color])
-	justified := justifyRight(cards, width)
-	colored := colorStr(justified, shellColors[color])
-	fmt.Print(colored)
-
-	discards := cg.game.discards[color].Cards
-	topDiscard := "   "
-	if len(discards) > 0 {
-		topDiscard = discards[len(discards)-1].pip
-		topDiscard = colorStr(justifyRight(topDiscard, 3), shellColors[color])
-	}
-	fmt.Print("  |", topDiscard, " |  ")
-
-	fmt.Print(colorStr(FormatCards(*cg.game.player2Plays[color]), shellColors[color]))
+	printPlayPile(cg.game.player1Plays[color], true)
+	printDiscardPile(cg.game.discards[color])
+	printPlayPile(cg.game.player2Plays[color], false)
 	fmt.Println()
 }
 
+func printPlayPile(pile *Pile, rightJustify bool) {
+	uncolored := formatPile(pile, false)
+	colored := formatPile(pile, true)
+	width := len(uncolored)
+	spaces := ""
+	if rightJustify {
+		spaces = strings.Repeat(" ", 28 - width)
+	}
+	fmt.Print(spaces, colored)
+}
 
+func printDiscardPile(pile *Pile) {
+	discardStr := "   "
+	discards := pile.Cards
+	if len(discards) > 0 {
+		card := discards[len(discards)-1]
+		if card.pip == "10" {
+			discardStr = " " + colorCard(card)
+		} else {
+			discardStr = "  " + colorCard(card)
+		}
+	}
+	fmt.Print(" |", discardStr, " |  ")
+}
 
-
-
-
+func formatPile(pile *Pile, color bool) (s string) {
+	for _, card := range pile.Cards {
+		if color {
+			s += colorCard(card) + " "
+		} else {
+			s += card.pip + " "
+		}
+	}
+	return
+}
 
 func printScores(game *Game) {
 	fmt.Print("Player1 score: ")
@@ -148,20 +166,13 @@ func printScore(plays map[string]*Pile) {
 	for _, color := range Suits {
 		p := plays[color]
 		score = p.Score()
-		fmt.Print(colorStr(justifyRight(strconv.Itoa(score), 4), shellColors[color]), " ")
+		fmt.Print(colorStr(justifyRight(strconv.Itoa(score), 4), colors[color]), " ")
 	}
 }
 
 
 
-func FormatCards(p Pile) string {
-	c := p.Cards
-	s := fmt.Sprint(c)
-	return s[1 : len(s)-1]
-}
-
 func justifyRight(s string, width int) string {
-	return s
 	return strings.Repeat(" ", width-len(s)) + s
 }
 
@@ -169,7 +180,7 @@ func justifyRight(s string, width int) string {
 
 // Shell Colors
 // ====
-var shellColors = map[string]string{
+var colors = map[string]string{
 	"yellow": "1;33",
 	"blue":   "1;34",
 	"white":  "1;37",
@@ -186,7 +197,7 @@ func colorCard(card Card) string {
 }
 
 func colorStr(str, color string) string {
-	return colorEscape(shellColors[color]) + str + colorEscape("")
+	return colorEscape(colors[color]) + str + colorEscape("")
 }
 
 func colorEscape(str string) string {

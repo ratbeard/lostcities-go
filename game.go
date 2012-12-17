@@ -51,7 +51,7 @@ func NewGame(seed int64) (game *Game) {
 	if seed == 1 {
 		seed = time.Now().UTC().UnixNano()
 	}
-	rand.Seed(0)
+	rand.Seed(seed)
 		
 	game = &Game{
 		currentTurn:  "player1",

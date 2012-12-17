@@ -2,8 +2,6 @@ package main
 
 import (
 	"fmt"
-	"math/rand"
-	"time"
 	"strconv"
 	"strings"
 )
@@ -14,8 +12,7 @@ type ConsoleGame struct {
 }
 
 func NewConsoleGame() *ConsoleGame {
-	rand.Seed(time.Now().UTC().UnixNano())
-	return &ConsoleGame{game: NewGame()}
+	return &ConsoleGame{game: NewGame(1)}
 }
 
 func (cg *ConsoleGame) Start() {

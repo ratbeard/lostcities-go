@@ -45,9 +45,13 @@ type Game struct {
 	done bool
 }
 
-func NewGame() (game *Game) {
-	// Randomize
-	rand.Seed(time.Now().UTC().UnixNano())
+func NewGame(seed int64) (game *Game) {
+	// Randomize.  Kinda janky to use 1 as a sentinel value
+	// but I used 0 in the tests.
+	if seed == 1 {
+		seed = time.Now().UTC().UnixNano()
+	}
+	rand.Seed(0)
 		
 	game = &Game{
 		currentTurn:  "player1",

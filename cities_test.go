@@ -2,9 +2,7 @@ package main
 
 import (
 	"fmt"
-	"math/rand"
 	"testing"
-	"time"
 )
 
 // Using rand.seed(0), game should look like:
@@ -15,9 +13,7 @@ import (
 // 
 func TestNewGame(t *testing.T) {
 	_ = fmt.Println
-	rand.Seed(time.Now().UTC().UnixNano())
-	rand.Seed(0)
-	g := NewGame()
+	g := NewGame(0)
 
 	if len(g.player1Hand.Cards) != 5 {
 		t.Error("Wrong number of starting cards for player1", len(g.player1Hand.Cards))
@@ -41,8 +37,7 @@ func TestNewGame(t *testing.T) {
 }
 
 func TestExpectedDeckOrder(t *testing.T) {
-	rand.Seed(0)
-	game := NewGame()
+	game := NewGame(0)
 	var card Card
 
 	card = Card{"green", "7"}
@@ -62,8 +57,7 @@ func TestExpectedDeckOrder(t *testing.T) {
 }
 
 func TestHasCard(t *testing.T) {
-	rand.Seed(0)
-	game := NewGame()
+	game := NewGame(0)
 	var card Card
 
 	card = Card{"green", "7"}
@@ -113,8 +107,7 @@ func TestHighestCard(t *testing.T) {
 }
 
 func TestValidMove(t *testing.T) {
-	rand.Seed(0)
-	game := NewGame()
+	game := NewGame(0)
 
 	// Playing or Discarding from hand then drawing from deck is a legit first move
 	for _, card := range game.player1Hand.Cards {
@@ -171,8 +164,7 @@ func TestValidMove(t *testing.T) {
 }
 
 func TestPlayingInvalidMove(t *testing.T) {
-	rand.Seed(0)
-	game := NewGame()
+	game := NewGame(0)
 	move := &Move{"player2", game.player1Hand.Cards[0], PlayAction, "yellow"}
 
 	err := game.PlayMove(move)
@@ -185,8 +177,7 @@ func TestPlayingInvalidMove(t *testing.T) {
 }
 
 func TestPlayingValidMove(t *testing.T) {
-	rand.Seed(0)
-	game := NewGame()
+	game := NewGame(0)
 	var card Card
 	var move *Move
 
@@ -252,8 +243,7 @@ func TestPlayingValidMove(t *testing.T) {
 }
 
 func TestTurnsAndGameEnd(t *testing.T) {
-	rand.Seed(0)
-	game := NewGame()
+	game := NewGame(0)
 	var turn string
 	var hand Pile
 	var move *Move

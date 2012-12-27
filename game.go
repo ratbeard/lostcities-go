@@ -48,7 +48,7 @@ type Game struct {
 func NewGame(seed int64) (game *Game) {
 	// Randomize.  Kinda janky to use 1 as a sentinel value
 	// but I used 0 in the tests.
-	if seed == 1 {
+	if seed == 0 {
 		seed = time.Now().UTC().UnixNano()
 	}
 	rand.Seed(seed)
@@ -218,15 +218,6 @@ func buildShuffledDeck() Pile {
 	for i, index := range randIndices {
 		shuffled[i] = unshuffled[index]
 	}
-
-	//fmt.Println(shuffled)
-	/*
-		reversed := make([]Card, cardCount)
-		for i := 0; i < cardCount; i++ {
-			reversed[cardCount-1-i] = shuffled[i] 
-		}
-		fmt.Println("Top to bottom:", reversed)
-	*/
 
 	return Pile{Cards: shuffled}
 }

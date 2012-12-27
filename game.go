@@ -110,7 +110,7 @@ func (game *Game) PlayMove(move *Move) error {
 		return err
 	}
 
-	// Perform the play/discard
+	// Play/Discard the card
 	suit := move.card.suit
 	var p *Pile
 	if move.action == DiscardAction {
@@ -119,6 +119,9 @@ func (game *Game) PlayMove(move *Move) error {
 		p = game.playPileFor(move.player, suit)
 	}
 	p.Add(move.card)
+
+	hand := game.handFor(move.player)
+	hand.Remove(move.card)
 
 	// Perform the draw
 	game.draw(move.player, move.drawPile)

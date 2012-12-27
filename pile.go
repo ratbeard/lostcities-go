@@ -10,13 +10,22 @@ type Pile struct {
 	//Sort bool
 }
 
-func (pile *Pile) Has(card Card) (found bool) {
-	for _, c := range pile.Cards {
+func (pile *Pile) index(card Card) int {
+	for i, c := range pile.Cards {
 		if c == card {
-			return true
+			return i
 		}
 	}
-	return
+	return -1
+}
+
+func (pile *Pile) Has(card Card) bool {
+	return pile.index(card) != -1
+}
+
+func (pile *Pile) Remove(card Card) {
+	i := pile.index(card)
+	pile.Cards = append(pile.Cards[:i], pile.Cards[i+1:]...)
 }
 
 func (pile *Pile) Pop() (card Card, ok bool) {
@@ -31,10 +40,6 @@ func (pile *Pile) Pop() (card Card, ok bool) {
 
 func (pile *Pile) Add(card Card) {
 	pile.Cards = append(pile.Cards, card)
-}
-
-func (pile *Pile) Remove(card Card) {
-
 }
 
 func (pile *Pile) MoveTopCardTo(other *Pile) {

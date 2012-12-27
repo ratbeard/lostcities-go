@@ -191,6 +191,9 @@ func TestPlayingValidMove(t *testing.T) {
 	if p := game.player1Plays[card.suit]; !p.Has(card) {
 		t.Fatal("Playing a card should put it in the play pile", card, p)
 	}
+	if p := game.player1Hand; p.Has(card) {
+		t.Fatal("Playing a card should remove it from the hand", card, p)
+	}
 
 	// Turn 2 - Player2 discards {yellow 7}
 	card = game.player2Hand.Cards[0]

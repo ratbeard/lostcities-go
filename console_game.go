@@ -12,7 +12,7 @@ type ConsoleGame struct {
 }
 
 func NewConsoleGame() *ConsoleGame {
-	return &ConsoleGame{game: NewGame(1)}
+	return &ConsoleGame{game: NewGame(0)}
 }
 
 func (cg *ConsoleGame) Start() {

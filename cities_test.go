@@ -15,15 +15,15 @@ func TestNewGame(t *testing.T) {
 	_ = fmt.Println
 	g := NewGame(0)
 
-	if len(g.player1Hand.Cards) != 5 {
+	if len(g.player1Hand.Cards) != 8 {
 		t.Error("Wrong number of starting cards for player1", len(g.player1Hand.Cards))
 	}
 
-	if len(g.player2Hand.Cards) != 5 {
+	if len(g.player2Hand.Cards) != 8 {
 		t.Error("Wrong number of starting cards for player2", len(g.player2Hand.Cards))
 	}
 
-	if len(g.deck.Cards) != (55) {
+	if len(g.deck.Cards) != 44 {
 		t.Error("Wrong number of cards left in deck", len(g.deck.Cards))
 	}
 
@@ -42,7 +42,7 @@ func TestExpectedDeckOrder(t *testing.T) {
 
 	card = Card{"green", "7"}
 	if game.player1Hand.Cards[0] != card {
-		t.Error("player1 unexpected card")
+		t.Error("player1 unexpected card", game.player1Hand.Cards)
 	}
 
 	card = Card{"blue", "8"}

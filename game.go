@@ -7,15 +7,15 @@ import (
 )
 
 const (
-	cardInHandCount = 5
-	cardCount       = 13 * 5
+	cardInHandCount = 8
+	cardCount       = 12 * 5
 
 	PlayAction    = 1
 	DiscardAction = 2
 )
 
 var (
-	Pips  = [...]string{"s", "s", "s", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"}
+	Pips  = [...]string{"s", "s", "s", "2", "3", "4", "5", "6", "7", "8", "9", "10"}
 	Suits = [...]string{"yellow", "white", "blue", "green", "red"}
 )
 

@@ -93,9 +93,11 @@ func (game *Game) CheckMove(move *Move) error {
 		return errors.New("Invalid action.  Must be play or discard")
 	}
 
-	p := game.playPileFor(move.player, move.card.suit)
-	if !p.IsHighestCard(move.card) {
-		return errors.New("A higher card has been played in that pile")
+	if move.action == PlayAction {
+		p := game.playPileFor(move.player, move.card.suit)
+		if !p.IsHighestCard(move.card) {
+			return errors.New("A higher card has been played in that pile")
+		}
 	}
 
 	if p := game.drawPileFor(move.drawPile); len(p.Cards) == 0 {

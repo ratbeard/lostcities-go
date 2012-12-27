@@ -156,6 +156,12 @@ func TestValidMove(t *testing.T) {
 	assertValidMove(t, game, &Move{"player1", Card{"green", "7"}, PlayAction, "deck"})
 	_, _ = p.Pop()
 
+	// Discarding a card thats lower than a played card is legit
+	p = game.player1Plays["green"]
+	p.Add(Card{"green", "8"})
+	assertValidMove(t, game, &Move{"player1", Card{"green", "7"}, DiscardAction, "deck"})
+	_, _ = p.Pop()
+
 	// Playing a card thats lower than a card that your opponent has played is legit
 	p = game.player2Plays["green"]
 	p.Add(Card{"green", "8"})

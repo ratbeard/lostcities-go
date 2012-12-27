@@ -53,7 +53,7 @@ func (cg *ConsoleGame) update() {
 		fmt.Println("Game Over!")
 		return
 	}
-	
+
 	// Update current move's player
 	cg.currentMove.player = cg.game.currentTurn
 
@@ -118,7 +118,7 @@ func printPlayPile(pile *Pile, rightJustify bool) {
 	width := len(uncolored)
 	spaces := ""
 	if rightJustify {
-		spaces = strings.Repeat(" ", 28 - width)
+		spaces = strings.Repeat(" ", 28-width)
 	}
 	fmt.Print(spaces, colored)
 }
@@ -170,13 +170,9 @@ func printScore(plays map[string]*Pile) {
 	}
 }
 
-
-
 func justifyRight(s string, width int) string {
 	return strings.Repeat(" ", width-len(s)) + s
 }
-
-
 
 // Shell Colors
 // ====

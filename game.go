@@ -52,7 +52,7 @@ func NewGame(seed int64) (game *Game) {
 		seed = time.Now().UTC().UnixNano()
 	}
 	rand.Seed(seed)
-		
+
 	game = &Game{
 		currentTurn:  "player1",
 		deck:         buildShuffledDeck(),
